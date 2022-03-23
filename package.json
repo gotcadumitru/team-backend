@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "cd client && npm run build",
-    "install-client": "cd client && npm install",
+    "build": "npm run build",
     "start": "node index.js"
   },
   "license": "MIT",
