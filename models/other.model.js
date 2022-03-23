@@ -1,15 +1,14 @@
-const {
-    Schema,
-    model
-} = require("mongoose");
+const { Schema, model } = require('mongoose');
 
-
-const OtherSchema = new Schema({
+const OtherSchema = new Schema(
+  {
     name: String,
-
-}, {
+  },
+  {
     timestamps: true,
-});
+    _id: true,
+  },
+);
 
 const Other = model('Other', OtherSchema);
 
