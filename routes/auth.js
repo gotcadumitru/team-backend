@@ -44,7 +44,6 @@ router.post('/register', async (req, res) => {
   });
   try {
     const savedUser = await newUser.save();
-    const resetUrl = `https://localhost:3000/auth/confirmRegister/${confirmToken}`;
 
     const message = `
         <h1>You have requested a registration</h1>
@@ -107,12 +106,6 @@ router.post('/login', async (req, res) => {
       message: 'Unfortunately, the administrators decided not to confirm your account',
     });
   }
-  if (user.accountStatus === AccountStatus.WAITING_FOR_CONFIRMATION) {
-    return res.status(400).send({
-      succes: false,
-      message: 'Your account is waiting confirmation from the administrator',
-    });
-  }
   //create and assign a token
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   res.send({
@@ -135,6 +128,20 @@ router.post('/googlelogin', async (req, res) => {
         try {
           const user = await User.findOne({ email: email });
           if (!!user) {
+            if (user.accountStatus === AccountStatus.BLOCKED) {
+              return res.status(400).send({
+                succes: false,
+                message: 'Your account is blocked',
+              });
+            }
+
+            if (user.accountStatus === AccountStatus.REJECTED) {
+              return res.status(400).send({
+                succes: false,
+                message: 'Unfortunately, the administrators decided not to confirm your account',
+              });
+            }
+
             const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
             res.status(200).json({
               succes: true,
@@ -142,7 +149,7 @@ router.post('/googlelogin', async (req, res) => {
             });
           } else {
             const password = email + process.env.TOKEN_SECRET;
-            const accountStatus = AccountStatus.CONFIRMED;
+            const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
             let newUser = new User({ name, surname, email, password, accountStatus, loginMethod: 1 });
             try {
               const newSavedUser = await newUser.save();
@@ -186,10 +193,20 @@ router.post('/facebooklogin', async (req, res) => {
         try {
           const user = await User.findOne({ email: email });
           if (!!user) {
-            if (user.accountStatus == AccountStatus.WAITING_FOR_CONFIRMATION) {
-              user.accountStatus = AccountStatus.CONFIRMED;
-              await user.save();
+            if (user.accountStatus === AccountStatus.BLOCKED) {
+              return res.status(400).send({
+                succes: false,
+                message: 'Your account is blocked',
+              });
             }
+
+            if (user.accountStatus === AccountStatus.REJECTED) {
+              return res.status(400).send({
+                succes: false,
+                message: 'Unfortunately, the administrators decided not to confirm your account',
+              });
+            }
+
             const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
             return res.status(200).json({
               succes: true,
@@ -197,7 +214,7 @@ router.post('/facebooklogin', async (req, res) => {
             });
           } else {
             const password = email + process.env.TOKEN_SECRET;
-            const accountStatus = AccountStatus.CONFIRMED;
+            const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
             let newUser = new User({ name, surname, email, password, accountStatus, loginMethod: 2 });
             try {
               const newSavedUser = await newUser.save();
@@ -382,11 +399,8 @@ router.get('/me', checkToken, async (req, res) => {
     res.status(200).json({
       succes: true,
       user: {
-        name: req.user.name,
-        surname: req.user.surname,
-        email: req.user.email,
-        accountStatus: req.user.accountStatus,
         id: req.user._id,
+        ...req.user._doc,
       },
     });
   } else {
@@ -404,7 +418,9 @@ router.get('/users-to-confirm', checkToken, async (req, res) => {
       ...user._doc,
       id: user._id,
     }));
-    const filtredUsers = usersFormated.filter((user) => user.accountStatus === AccountStatus.WAITING_FOR_CONFIRMATION);
+    const filtredUsers = usersFormated.filter(
+      (user) => user.domiciliuImages.length && user.accountStatus === AccountStatus.WAITING_FOR_CONFIRMATION,
+    );
     usersFormated.map((user) => {
       console.log(user.accountStatus);
     });
@@ -472,7 +488,7 @@ router.get('/users', checkToken, async (req, res) => {
 
 router.post('/edit-user', checkToken, async (req, res) => {
   try {
-    const { oras, localitate, id, role, accountStatus } = req.body;
+    const { name, id, surname, email, role, accountStatus, oras, localitate, images } = req.body;
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
@@ -480,10 +496,15 @@ router.post('/edit-user', checkToken, async (req, res) => {
         message: 'Invalid user id',
       });
     }
-    findUser.oras = oras;
-    findUser.localitate = localitate;
-    findUser.role = role;
-    findUser.accountStatus = accountStatus;
+    findUser.oras = oras ?? findUser.oras;
+    findUser.localitate = localitate ?? findUser.localitate;
+    findUser.role = role ?? findUser.role;
+    findUser.accountStatus = accountStatus ?? findUser.accountStatus;
+    findUser.email = email ?? findUser.email;
+    findUser.name = name ?? findUser.name;
+    findUser.surname = surname ?? findUser.surname;
+    findUser.domiciliuImages = images ?? findUser.domiciliuImages;
+
     await findUser.save();
     res.status(200).json({
       succes: true,
