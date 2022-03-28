@@ -1,21 +1,16 @@
-const multer = require('multer');
-const upload = multer({
-  storage: multer.diskStorage({
-    destination(req, file, cb) {
-      cb(null, './files');
-    },
-    filename(req, file, cb) {
-      cb(null, `${new Date().getTime()}_${file.originalname}`);
-    },
-  }),
-  limits: {
-    fileSize: 100000000, // max file size 1MB = 1000000 bytes
-  },
-  fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(jpeg|jpg|png|pdf|doc|docx|xlsx|xls)$/)) {
-      return cb(new Error('only upload files with jpg, jpeg, png, pdf, doc, docx, xslx, xls format.'));
-    }
-    cb(undefined, true); // continue with upload
-  },
-});
-module.exports = upload;
+const fetch = require('node-fetch');
+
+const uploadImage = async (image, name) => {
+  try {
+    const response = await fetch(`https://api.imgbb.com/1/upload?name=${name}&key=${process.env.IMGG_SECRET}`, {
+      method: 'POST',
+      body: image,
+    });
+    console.log(response);
+    return response.data.url;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};
+module.exports = uploadImage;

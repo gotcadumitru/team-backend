@@ -1,0 +1,8 @@
+const AccountStatus = {
+  WAITING_FOR_CONFIRMATION: 'WAITING_FOR_CONFIRMATION',
+  CONFIRMED: 'CONFIRMED',
+  REJECTED: 'REJECTED',
+  BLOCKED: 'BLOCKED',
+};
+
+module.exports = AccountStatus;

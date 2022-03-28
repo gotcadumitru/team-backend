@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
 const authRouter = require('./routes/auth');
-const OtherRouter = require('./routes/other');
+const PostRouter = require('./routes/post');
 
 const port = process.env.PORT || 8080;
 
@@ -25,7 +25,7 @@ connection.once('open', () => {
 });
 
 app.use('/api/auth', authRouter);
-app.use('/api/other', OtherRouter);
+app.use('/api/post', PostRouter);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));

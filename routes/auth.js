@@ -4,16 +4,16 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const { sendMail } = require('../utils/sendMail');
-const { registerValidate, loginValidate } = require('../validation');
 const checkToken = require('./verifyToken');
 const { OAuth2Client } = require('google-auth-library');
 const { default: fetch } = require('node-fetch');
+const AccountStatus = require('../defaults/account-status');
 const router = require('express').Router();
 
 const client = new OAuth2Client('1057553385734-97f7heo0s1n4gvpvqa9q8qf6iati0rtd.apps.googleusercontent.com');
 
 router.post('/register', async (req, res) => {
-  const { name, surname, email, password } = req.body;
+  const { name, surname, email, password, oras, localitate, images } = req.body;
 
   const emailExist = await User.findOne({ email: email });
   if (emailExist) {
@@ -25,20 +25,30 @@ router.post('/register', async (req, res) => {
   //Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await hash(password, salt);
-  const isAccConfirmed = false;
+  const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
 
   const confirmToken = crypto.randomBytes(20).toString('hex');
 
   const confirmRegisterToken = crypto.createHash('sha256').update(confirmToken).digest('hex');
-  const newUser = new User({ name, surname, email, password: hashedPassword, isAccConfirmed, confirmRegisterToken, loginMethod: 0 });
+  const newUser = new User({
+    name,
+    surname,
+    email,
+    password: hashedPassword,
+    accountStatus,
+    confirmRegisterToken,
+    loginMethod: 0,
+    oras,
+    localitate,
+    domiciliuImages: images,
+  });
   try {
     const savedUser = await newUser.save();
     const resetUrl = `https://localhost:3000/auth/confirmRegister/${confirmToken}`;
 
     const message = `
         <h1>You have requested a registration</h1>
-        <p>Please go to this link to confirm your email</p>
-        <a href=${resetUrl} clicktracking=off >${resetUrl}</a>
+        <p>Please wait until an administrator confirms the registration request</p>
         `;
     try {
       await sendMail({
@@ -56,7 +66,7 @@ router.post('/register', async (req, res) => {
     }
 
     res.json({
-      message: 'A confirmation email was sent to your email',
+      message: 'Please follow the steps in the email',
     });
   } catch (err) {
     res.status(400).json({
@@ -84,10 +94,23 @@ router.post('/login', async (req, res) => {
     });
   }
 
-  if (!user.isAccConfirmed) {
+  if (user.accountStatus === AccountStatus.BLOCKED) {
     return res.status(400).send({
       succes: false,
-      message: 'Please confirm your email',
+      message: 'Your account is blocked',
+    });
+  }
+
+  if (user.accountStatus === AccountStatus.REJECTED) {
+    return res.status(400).send({
+      succes: false,
+      message: 'Unfortunately, the administrators decided not to confirm your account',
+    });
+  }
+  if (user.accountStatus === AccountStatus.WAITING_FOR_CONFIRMATION) {
+    return res.status(400).send({
+      succes: false,
+      message: 'Your account is waiting confirmation from the administrator',
     });
   }
   //create and assign a token
@@ -119,8 +142,8 @@ router.post('/googlelogin', async (req, res) => {
             });
           } else {
             const password = email + process.env.TOKEN_SECRET;
-            const isAccConfirmed = true;
-            let newUser = new User({ name, surname, email, password, isAccConfirmed, loginMethod: 1 });
+            const accountStatus = AccountStatus.CONFIRMED;
+            let newUser = new User({ name, surname, email, password, accountStatus, loginMethod: 1 });
             try {
               const newSavedUser = await newUser.save();
 
@@ -147,8 +170,8 @@ router.post('/googlelogin', async (req, res) => {
 });
 
 router.post('/facebooklogin', async (req, res) => {
-  const { accessToken, userID } = req.body;
-  const urlGraphFacebook = `https://graph.facebook.com/v2.11/${userID}/?fields=id,name,email&access_token=${accessToken}`;
+  const { token, userID } = req.body;
+  const urlGraphFacebook = `https://graph.facebook.com/v2.11/${userID}/?fields=id,name,email&access_token=${token}`;
   try {
     const resJSON = await fetch(urlGraphFacebook, {
       method: 'GET',
@@ -163,8 +186,8 @@ router.post('/facebooklogin', async (req, res) => {
         try {
           const user = await User.findOne({ email: email });
           if (!!user) {
-            if (user.isAccConfirmed == false) {
-              user.isAccConfirmed = true;
+            if (user.accountStatus == AccountStatus.WAITING_FOR_CONFIRMATION) {
+              user.accountStatus = AccountStatus.CONFIRMED;
               await user.save();
             }
             const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
@@ -174,8 +197,8 @@ router.post('/facebooklogin', async (req, res) => {
             });
           } else {
             const password = email + process.env.TOKEN_SECRET;
-            const isAccConfirmed = true;
-            let newUser = new User({ name, surname, email, password, isAccConfirmed, loginMethod: 2 });
+            const accountStatus = AccountStatus.CONFIRMED;
+            let newUser = new User({ name, surname, email, password, accountStatus, loginMethod: 2 });
             try {
               const newSavedUser = await newUser.save();
 
@@ -337,7 +360,7 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
       });
     }
 
-    findUser.isAccConfirmed = true;
+    findUser.accountStatus = AccountStatus.CONFIRMED;
     findUser.confirmRegisterToken = '';
     const token = jwt.sign({ _id: findUser._id }, process.env.TOKEN_SECRET);
     await findUser.save();
@@ -362,7 +385,7 @@ router.get('/me', checkToken, async (req, res) => {
         name: req.user.name,
         surname: req.user.surname,
         email: req.user.email,
-        isAccConfirmed: req.user.isAccConfirmed,
+        accountStatus: req.user.accountStatus,
         id: req.user._id,
       },
     });
@@ -374,14 +397,65 @@ router.get('/me', checkToken, async (req, res) => {
   }
 });
 
+router.get('/users-to-confirm', checkToken, async (req, res) => {
+  try {
+    const users = await User.find({});
+    const usersFormated = users.map((user) => ({
+      ...user._doc,
+      id: user._id,
+    }));
+    const filtredUsers = usersFormated.filter((user) => user.accountStatus === AccountStatus.WAITING_FOR_CONFIRMATION);
+    usersFormated.map((user) => {
+      console.log(user.accountStatus);
+    });
+    res.status(200).json({
+      succes: true,
+      users: filtredUsers,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+
+router.post('/change-user-status', checkToken, async (req, res) => {
+  try {
+    const { userId, isConfirmed } = req.body;
+    const findUser = await User.findById(userId);
+    if (!findUser) {
+      return res.status(400).json({
+        succes: false,
+        message: 'Invalid user id',
+      });
+    }
+    if (typeof isConfirmed != 'boolean') {
+      return res.status(400).json({
+        succes: false,
+        message: 'Invalid status',
+      });
+    }
+    findUser.accountStatus = isConfirmed ? AccountStatus.CONFIRMED : AccountStatus.REJECTED;
+    await findUser.save();
+    res.status(200).json({
+      succes: true,
+      message: 'User Status has been successfully modified',
+      user: findUser,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+
 router.get('/users', checkToken, async (req, res) => {
   try {
     const users = await User.find({});
     const usersFormated = users.map((user) => ({
-      name: user.name,
-      surname: user.surname,
-      email: user.email,
-      isAccConfirmed: user.isAccConfirmed,
+      ...user._doc,
       id: user._id,
     }));
     res.status(200).json({
@@ -396,4 +470,31 @@ router.get('/users', checkToken, async (req, res) => {
   }
 });
 
+router.post('/edit-user', checkToken, async (req, res) => {
+  try {
+    const { oras, localitate, id, role, accountStatus } = req.body;
+    const findUser = await User.findById(id);
+    if (!findUser) {
+      return res.status(400).json({
+        succes: false,
+        message: 'Invalid user id',
+      });
+    }
+    findUser.oras = oras;
+    findUser.localitate = localitate;
+    findUser.role = role;
+    findUser.accountStatus = accountStatus;
+    await findUser.save();
+    res.status(200).json({
+      succes: true,
+      message: 'User has been successfully modified',
+      user: { ...findUser._doc, id: findUser._id },
+    });
+  } catch (err) {
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
 module.exports = router;
