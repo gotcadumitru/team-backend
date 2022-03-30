@@ -1,44 +1,17 @@
 const { Schema, model } = require('mongoose');
 
-const postSchema = Schema(
+const FileSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    createdBy: {
-      userName: {
-        type: String,
-      },
-      userSurname: {
-        type: String,
-      },
-      userId: {
-        type: String,
-      },
-    },
-    images: [
-      {
-        imageUrl: {
-          type: String,
-          required: true,
-        },
-        deleteUrl: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    name: { type: String, required: true },
+    idFromDrive: { type: String, required: true },
+    mimetype: { type: String, required: true },
   },
   {
     timestamps: true,
+    id: true,
   },
 );
 
-const Post = model('Post', postSchema);
+const File = model('File', FileSchema);
 
-module.exports = Post;
+module.exports = File;

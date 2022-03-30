@@ -50,22 +50,7 @@ const userSchema = new Schema({
     default: AccountRole.SIMPLE_USER,
   },
 
-  domiciliuImages: [
-    {
-      imageUrl: {
-        type: String,
-        required: true,
-      },
-      deleteUrl: {
-        type: String,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-    },
-  ],
+  domiciliuImages: [{ type: String }],
 
   confirmRegisterToken: String,
   resetPasswordToken: String,

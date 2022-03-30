@@ -2,7 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const OtherSchema = new Schema(
   {
-    name: String,
+    name: {},
   },
   {
     timestamps: true,

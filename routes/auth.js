@@ -488,7 +488,7 @@ router.get('/users', checkToken, async (req, res) => {
 
 router.post('/edit-user', checkToken, async (req, res) => {
   try {
-    const { name, id, surname, email, role, accountStatus, oras, localitate, images } = req.body;
+    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuImages } = req.body;
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
@@ -503,7 +503,7 @@ router.post('/edit-user', checkToken, async (req, res) => {
     findUser.email = email ?? findUser.email;
     findUser.name = name ?? findUser.name;
     findUser.surname = surname ?? findUser.surname;
-    findUser.domiciliuImages = images ?? findUser.domiciliuImages;
+    findUser.domiciliuImages = domiciliuImages ?? findUser.domiciliuImages;
 
     await findUser.save();
     res.status(200).json({
@@ -512,10 +512,12 @@ router.post('/edit-user', checkToken, async (req, res) => {
       user: { ...findUser._doc, id: findUser._id },
     });
   } catch (err) {
+    console.log(err);
     return res.status(400).json({
       succes: false,
       message: 'Something went wrong, hz ce',
     });
   }
 });
+
 module.exports = router;

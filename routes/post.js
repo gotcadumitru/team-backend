@@ -1,5 +1,5 @@
 const Other = require('../models/other.model');
-const Post = require('../models/file.model');
+const Post = require('../models/post.model');
 const checkToken = require('./verifyToken');
 const router = require('express').Router();
 router.get('/', async (req, res) => {

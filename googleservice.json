@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "hotel2-310108",
+  "private_key_id": "1c74166c9a533053567cee03f81a34cec27d530c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCspuBbDsEskYA0\ng4wVdSpTDF62izkS5TKrMTuzk8cFPTqM1+D53MDGe01laCdnHIn68lfDNpkrewzZ\nCXLTkdkCVGbqC5ey2AGtjFpXPhEL2IgYqgpYXE4tnpapDQqz7LmkVnhiED38yTwk\nNO4LGTUN2UqxRl4z0xzvjQPxBQ1DJM0d+suyaKvixSh7QBesnzku+vryKXAaVQ1/\naPVvsqbD1lRykpsZQJwAdON9Uq7Os9gnQ2WA8V2BXV3qP+uZKQOS1PIPJUgUCQpp\nK7/hLgIvKKqzxw0T4+AbzveBLZo/hHUTp4aTRGt9HMrV5v99yyd0KHdFYFaDqNJ7\ngVSOs1ERAgMBAAECggEALlns0LVw2iDD7RVF9frLHpmrEdHlxDNhO4GPuCHb5AWw\nouBQJ3SDEqZGvItOTMnmJ0eJlUCitYAnDluRhshYnN4A9SOgmeSQ6sFL/bENjYMX\n4ptABMHfQTMa2o7ESVKr8jk+v4EBy0xRR50oLTWavzmPanFsV/h9A7j1jm7fRR95\noIwQjDXs8LwI7wEtGezhlWjGPNJeLB8tywbsQ1iThPCjfIU5/Kav5gxZBD6gEv2r\nU09++wnVao8SxALEL1lF2CFdO8a8JG5WR1J6rHCFNPQP1gWiXv0WDW5Kjy2TAeK/\nVApZ//uy8iSuMZ+YH0RsGm8rT+sOKk7YGQStKlu3owKBgQDyniaMDEHgwYr3J8+j\nmHW+9FFXrPqrEZzvHi0HXXW/6B/tON0qf2wHk8iH1OZU4uCmjH6roMFy/rMuzFF7\nFA5lxsUklxxu5UOugNpDlO3beg6YXVd8svEZLFYHZUF5AliFf+/YR2Nr59HvG2ho\nY6dDxDPqPvvyts+FMu6yKaowOwKBgQC2LMg8eR6i0RJcDwflRN5P4Iydm+CZkOqq\np0RzuUCfC+ZalEPN4fs3clKGf8EBfA47qosTIdjE/M4PRAe1xNzZTP5YNzUeMOGI\nM+FGpzbhdt/2RPvG0NTJ+Aez4xaP7b1NQqKPmSplmlFOa/bFCdnPWTgASBKh1gtX\nOR+80wGbIwKBgBY2RHEt7hoVnhNioa/olV8WHxxXyds/kY6SxKyX8d/P8JxXSGhL\noihPb1yAMVY0Lz0QP8iWvx84Ek+GhS8vduH6gLII46GDe97ODS2CxQQC+LMaWJgi\nCdC0Lmwe6Q+bF1+hhuPWJVQLtTye1cA432dk3xvjCE4ATp9zOkc1aU9hAoGBAI6m\nZm0kEp8/w3aetnoLAWHe3X0U8DyPw5G5xNoxN67S7KAE9UskJ0j1ljWHmCSHdcW2\n94wVtt4Zb2l4xejJrH3j0k5VfJyVfiTfKwneKhVGtnzq65R1Ngqo069CpQozCUaU\nZSK4twA0ZHJaDDOiURISNM3TofNj3iGAs59yQxGtAoGBAMHd5uJ2luq624zISDn6\nJ5nfRP966F0FK8ckF6+iaD1TchIVENKTpJWW+CB5kQqQ6u0TOf+0/RalxjJhAGzr\n5XZFEdCVenp0Ym2k6jQKvae5AXh7Ce2IscnDJeMBJ1r/wuD/sEFGIMRoP52e+NO7\n0JXSoAIJdpSZML2HenXDj8ti\n-----END PRIVATE KEY-----\n",
+  "client_email": "googledriveserviceaccount@hotel2-310108.iam.gserviceaccount.com",
+  "client_id": "100234363093332974137",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/googledriveserviceaccount%40hotel2-310108.iam.gserviceaccount.com"
+}
