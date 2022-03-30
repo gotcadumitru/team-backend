@@ -9,6 +9,7 @@ const { OAuth2Client } = require('google-auth-library');
 const { default: fetch } = require('node-fetch');
 const AccountStatus = require('../defaults/account-status');
 const AccountRole = require('../defaults/account-role');
+const File = require('../models/file.model');
 const router = require('express').Router();
 
 const client = new OAuth2Client('1057553385734-97f7heo0s1n4gvpvqa9q8qf6iati0rtd.apps.googleusercontent.com');
@@ -397,11 +398,13 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
 
 router.get('/me', checkToken, async (req, res) => {
   if (req.user) {
+    const domiciliuImages = await File.find({ idFromDrive: { $in: req.user.domiciliuImages } });
     res.status(200).json({
       succes: true,
       user: {
         id: req.user._id,
         ...req.user._doc,
+        domiciliuImages,
       },
     });
   } else {
@@ -498,10 +501,10 @@ router.post('/edit-user', checkToken, async (req, res) => {
       });
     }
     if (role === AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR) {
-      const findModerator = await User.find({ localitate, oras })
+      const findModerator = await User.find({ localitate, oras });
       if (findModerator.length) {
-        findModerator[0].role = AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA
-        await findModerator[0].save()
+        findModerator[0].role = AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA;
+        await findModerator[0].save();
       }
     }
     findUser.oras = oras ?? findUser.oras;
