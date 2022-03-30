@@ -42,12 +42,12 @@ const userSchema = new Schema({
 
   localitate: {
     type: String,
-    default: AccountRole.SIMPLE_USER,
+    default: "",
   },
 
   oras: {
     type: String,
-    default: AccountRole.SIMPLE_USER,
+    default: "",
   },
 
   domiciliuImages: [
