@@ -13,7 +13,7 @@ router.post('/upload', async (req, res) => {
 
     const images = await Promise.all(
       files.map(async (file) => {
-        const path = './uploadsTemp/' + new Date().getTime() + Math.random() + file.name;
+        const path = './uploads/' + new Date().getTime() + Math.random() + file.name;
         await file.mv(path);
         const { imageUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file.name, file.mimetype, path);
         const newFileData = {
