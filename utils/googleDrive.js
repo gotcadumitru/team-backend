@@ -1,5 +1,6 @@
 const { google } = require('googleapis');
 const fs = require('fs');
+const bytesToSize = require('./bytesToMb');
 
 const KEY_FILE_PATH = 'googleservice.json';
 
@@ -34,11 +35,13 @@ const createAndUploadFile = async (name, mimeType, path) => {
     const response = await driveService.files.create({
       media,
       resource: fileMetaData,
-      fields: 'id',
+      fields: 'id, webViewLink, webContentLink, size',
     });
     const imageObject = {
       imageUrl: 'https://drive.google.com/uc?export=view&id=' + response.data.id,
       idFromDrive: response.data.id,
+      downloadLink: response.data.webContentLink,
+      size: bytesToSize(+response.data.size),
     };
     return imageObject;
   } catch (err) {
@@ -51,7 +54,6 @@ async function deleteFileFromGoogleDriveByFileId(fileId) {
     const result = await driveService.files.delete({
       fileId,
     });
-    console.log(result.data);
   } catch (error) {
     console.log(error.message);
   }
@@ -68,9 +70,9 @@ async function generatePublicUrl(fileId) {
     });
     const result = await driveService.files.get({
       fileId: fileId,
-      fields: 'webViewLink, webContentLink',
+      fields: 'webViewLink, webContentLink, size',
     });
-    console.log(result.data);
+    return { downloadLink: result.data.webContentLink, size: +result.data.size };
   } catch (error) {
     console.log(error.message);
   }
@@ -96,4 +98,4 @@ const createFolder = (name) => {
     },
   );
 };
-module.exports = { createAndUploadFile, createFolder, generatePublicUrl, deleteFileFromGoogleDriveByFileId, auth, MIME_TYPES };
+module.exports = { createAndUploadFile, createFolder, deleteFileFromGoogleDriveByFileId, auth, MIME_TYPES };

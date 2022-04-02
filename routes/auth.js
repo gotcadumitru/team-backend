@@ -15,9 +15,9 @@ const router = require('express').Router();
 const client = new OAuth2Client('1057553385734-97f7heo0s1n4gvpvqa9q8qf6iati0rtd.apps.googleusercontent.com');
 
 router.post('/register', async (req, res) => {
-  const { name, surname, email, password, oras, localitate, images } = req.body;
+  const { name, surname, email, password, oras, localitate, files } = req.body;
 
-  const emailExist = await User.findOne({ email: email });
+  const emailExist = await User.findOne({ email });
   if (emailExist) {
     return res.status(400).json({
       succes: false,
@@ -42,7 +42,7 @@ router.post('/register', async (req, res) => {
     loginMethod: 0,
     oras,
     localitate,
-    domiciliuImages: images,
+    domiciliuFiles: files,
   });
   try {
     const savedUser = await newUser.save();
@@ -80,7 +80,7 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email: email });
+  const user = await User.findOne({ email });
   if (!user) {
     return res.status(400).send({
       succes: false,
@@ -371,7 +371,6 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
 
   try {
     const findUser = await User.findOne({ confirmRegisterToken });
-    console.log(!findUser);
     if (!findUser) {
       return res.status(400).json({
         succes: false,
@@ -398,13 +397,13 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
 
 router.get('/me', checkToken, async (req, res) => {
   if (req.user) {
-    const domiciliuImages = await File.find({ idFromDrive: { $in: req.user.domiciliuImages } });
+    const domiciliuFiles = await File.find({ idFromDrive: { $in: req.user.domiciliuFiles } });
     res.status(200).json({
       succes: true,
       user: {
         id: req.user._id,
         ...req.user._doc,
-        domiciliuImages,
+        domiciliuFiles,
       },
     });
   } else {
@@ -415,24 +414,56 @@ router.get('/me', checkToken, async (req, res) => {
   }
 });
 
-router.get('/users-to-confirm', checkToken, async (req, res) => {
+router.get('/users-to-confirm/:oras/:localitate', checkToken, async (req, res) => {
   try {
-    const users = await User.find({});
+    const { oras, localitate } = req.params;
+    const users = await User.find({
+      oras,
+      localitate,
+      accountStatus: AccountStatus.WAITING_FOR_CONFIRMATION,
+      'domiciliuFiles.0': { $exists: true },
+    });
     const usersFormated = users.map((user) => ({
       ...user._doc,
       id: user._id,
     }));
-    const filtredUsers = usersFormated.filter(
-      (user) => user.domiciliuImages.length && user.accountStatus === AccountStatus.WAITING_FOR_CONFIRMATION,
+    await Promise.all(
+      usersFormated.map(async (user) => {
+        const domiciliuFiles = await File.find({ idFromDrive: { $in: user.domiciliuFiles } });
+        return (user.domiciliuFiles = domiciliuFiles);
+      }),
     );
-    usersFormated.map((user) => {
-      console.log(user.accountStatus);
-    });
     res.status(200).json({
       succes: true,
-      users: filtredUsers,
+      users: users,
     });
   } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+router.get('/users-moderatori/:oras/:localitate', checkToken, async (req, res) => {
+  try {
+    const { oras, localitate } = req.params;
+    const users = await User.find({
+      oras,
+      localitate,
+      accountStatus: AccountStatus.CONFIRMED,
+      role: AccountRole.MODERATOR,
+    });
+    const usersFormated = users.map((user) => ({
+      ...user._doc,
+      id: user._id,
+    }));
+    res.status(200).json({
+      succes: true,
+      users: usersFormated,
+    });
+  } catch (err) {
+    console.log(err);
     return res.status(400).json({
       succes: false,
       message: 'Something went wrong, hz ce',
@@ -492,7 +523,7 @@ router.get('/users', checkToken, async (req, res) => {
 
 router.post('/edit-user', checkToken, async (req, res) => {
   try {
-    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuImages } = req.body;
+    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuFiles } = req.body;
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
@@ -514,7 +545,7 @@ router.post('/edit-user', checkToken, async (req, res) => {
     findUser.email = email ?? findUser.email;
     findUser.name = name ?? findUser.name;
     findUser.surname = surname ?? findUser.surname;
-    findUser.domiciliuImages = domiciliuImages ?? findUser.domiciliuImages;
+    findUser.domiciliuFiles = domiciliuFiles ?? findUser.domiciliuFiles;
 
     await findUser.save();
     res.status(200).json({

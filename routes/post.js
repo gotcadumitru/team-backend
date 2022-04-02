@@ -61,8 +61,6 @@ router.get('/all', async (req, res) => {
 });
 router.get('/:id', async (req, res) => {
   try {
-    console.log(req.params);
-
     return res.status(200).send({
       newPost,
       succes: true,

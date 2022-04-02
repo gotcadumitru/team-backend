@@ -12,7 +12,6 @@ const checkToken = async (req, res, next) => {
   try {
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
     if (verified) {
-      console.log(verified);
       const findUser = await User.findById(verified._id);
 
       if (findUser) {
