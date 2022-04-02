@@ -1,6 +1,6 @@
 const checkToken = require('./verifyToken');
 const File = require('../models/file.model');
-// const fs = require('fs');
+const fs = require('fs');
 const router = require('express').Router();
 const { createAndUploadFile, deleteFileFromGoogleDriveByFileId } = require('../utils/googleDrive');
 
@@ -27,7 +27,7 @@ router.post('/upload', async (req, res) => {
 
         const newFile = new File(newFileData);
         await newFile.save();
-        // fs.unlinkSync(path);
+        fs.unlinkSync(path);
         return newFileData;
       }),
     );
