@@ -435,7 +435,7 @@ router.get('/users-to-confirm/:oras/:localitate', checkToken, async (req, res) =
     );
     res.status(200).json({
       succes: true,
-      users: users,
+      users: usersFormated,
     });
   } catch (err) {
     console.log(err);
@@ -454,6 +454,58 @@ router.get('/users-moderatori/:oras/:localitate', checkToken, async (req, res) =
       accountStatus: AccountStatus.CONFIRMED,
       role: AccountRole.MODERATOR,
     });
+    const usersFormated = users.map((user) => ({
+      ...user._doc,
+      id: user._id,
+    }));
+    res.status(200).json({
+      succes: true,
+      users: usersFormated,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+
+router.get('/users-administrator/:oras/:localitate', checkToken, async (req, res) => {
+  try {
+    const { oras, localitate } = req.params;
+    const users = await User.find({
+      oras,
+      localitate,
+      accountStatus: AccountStatus.CONFIRMED,
+      role: {
+        $in: [
+          AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA,
+          AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR,
+          AccountRole.ADMINISTRATOR,
+        ],
+      },
+    });
+    const usersFormated = users.map((user) => ({
+      ...user._doc,
+      id: user._id,
+    }));
+    res.status(200).json({
+      succes: true,
+      users: usersFormated,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+router.get('/users/:oras/:localitate', checkToken, async (req, res) => {
+  try {
+    const { oras, localitate } = req.params;
+    const users = await User.find({ oras, localitate });
     const usersFormated = users.map((user) => ({
       ...user._doc,
       id: user._id,
@@ -493,25 +545,6 @@ router.post('/change-user-status', checkToken, async (req, res) => {
       succes: true,
       message: 'User Status has been successfully modified',
       user: findUser,
-    });
-  } catch (err) {
-    return res.status(400).json({
-      succes: false,
-      message: 'Something went wrong, hz ce',
-    });
-  }
-});
-
-router.get('/users', checkToken, async (req, res) => {
-  try {
-    const users = await User.find({});
-    const usersFormated = users.map((user) => ({
-      ...user._doc,
-      id: user._id,
-    }));
-    res.status(200).json({
-      succes: true,
-      users: usersFormated,
     });
   } catch (err) {
     return res.status(400).json({

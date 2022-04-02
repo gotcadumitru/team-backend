@@ -21,11 +21,11 @@ router.get('/', async (req, res) => {
 
 router.post('/new', checkToken, async (req, res) => {
   try {
-    const { title, description, images } = req.body;
+    const { title, description, files } = req.body;
     const newPost = new Post({
       name: title,
       description,
-      images,
+      files,
       createdBy: {
         userName: req.user.name,
         userSurname: req.user.surname,
