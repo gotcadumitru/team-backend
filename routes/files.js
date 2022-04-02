@@ -11,15 +11,15 @@ router.post('/upload', async (req, res) => {
       files = [files];
     }
 
-    const images = await Promise.all(
+    const uploadedFiles = await Promise.all(
       files.map(async (file) => {
         const path = './uploads/' + new Date().getTime() + Math.random() + file.name;
         await file.mv(path);
-        const { imageUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file.name, file.mimetype, path);
+        const { fileUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file.name, file.mimetype, path);
         const newFileData = {
           mimetype: file.mimetype,
           name: file.name,
-          imageUrl,
+          fileUrl,
           idFromDrive,
           size,
           downloadLink,
@@ -34,7 +34,7 @@ router.post('/upload', async (req, res) => {
 
     res.status(200).json({
       succes: true,
-      files: images,
+      files: uploadedFiles,
     });
   } catch (err) {
     console.log(err);
@@ -57,7 +57,7 @@ router.post('/delete', checkToken, async (req, res) => {
 
     res.status(200).json({
       succes: true,
-      links: images,
+      links: files,
     });
   } catch (err) {
     console.log(err);

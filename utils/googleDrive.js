@@ -37,13 +37,13 @@ const createAndUploadFile = async (name, mimeType, path) => {
       resource: fileMetaData,
       fields: 'id, webViewLink, webContentLink, size',
     });
-    const imageObject = {
-      imageUrl: 'https://drive.google.com/uc?export=view&id=' + response.data.id,
+    const fileObject = {
+      fileUrl: 'https://drive.google.com/uc?export=view&id=' + response.data.id,
       idFromDrive: response.data.id,
       downloadLink: response.data.webContentLink,
       size: bytesToSize(+response.data.size),
     };
-    return imageObject;
+    return fileObject;
   } catch (err) {
     console.log(err);
   }

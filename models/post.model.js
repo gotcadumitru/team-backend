@@ -21,18 +21,7 @@ const postSchema = Schema(
         type: String,
       },
     },
-    images: [
-      {
-        imageUrl: {
-          type: String,
-          required: true,
-        },
-        deleteUrl: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    files: [{ type: String }],
   },
   {
     timestamps: true,
