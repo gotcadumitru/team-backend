@@ -1,28 +1,33 @@
 const checkToken = require('./verifyToken');
 const File = require('../models/file.model');
+const fs = require('fs');
 const router = require('express').Router();
 const { createAndUploadFile, deleteFileFromGoogleDriveByFileId } = require('../utils/googleDrive');
 
-router.post('/upload', checkToken, async (req, res) => {
+router.post('/upload', async (req, res) => {
   try {
-    let { files } = req.files ?? [];
+    let files = req.files?.files ?? [];
     if (!Array.isArray(files)) {
       files = [files];
     }
 
     const images = await Promise.all(
       files.map(async (file) => {
-        const path = './uploads/' + new Date().getTime() + Math.random() + file.name;
+        const path = './uploadsTemp/' + new Date().getTime() + Math.random() + file.name;
         await file.mv(path);
-        const { imageUrl, idFromDrive } = await createAndUploadFile(file.name, file.mimetype, path);
+        const { imageUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file.name, file.mimetype, path);
         const newFileData = {
           mimetype: file.mimetype,
           name: file.name,
           imageUrl,
           idFromDrive,
+          size,
+          downloadLink,
         };
+
         const newFile = new File(newFileData);
         await newFile.save();
+        fs.unlinkSync(path);
         return newFileData;
       }),
     );

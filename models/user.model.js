@@ -42,15 +42,15 @@ const userSchema = new Schema({
 
   localitate: {
     type: String,
-    default: "",
+    default: '',
   },
 
   oras: {
     type: String,
-    default: "",
+    default: '',
   },
 
-  domiciliuImages: [{ type: String }],
+  domiciliuFiles: [{ type: String }],
 
   confirmRegisterToken: String,
   resetPasswordToken: String,
