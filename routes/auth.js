@@ -151,8 +151,11 @@ router.post('/googlelogin', async (req, res) => {
             });
           } else {
             const password = email + process.env.TOKEN_SECRET;
+            //Hash password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await hash(password, salt);
             const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
-            let newUser = new User({ name, surname, email, password, accountStatus, loginMethod: 1 });
+            let newUser = new User({ name, surname, email, password: hashedPassword, accountStatus, loginMethod: 1 });
             try {
               const newSavedUser = await newUser.save();
 
@@ -216,8 +219,11 @@ router.post('/facebooklogin', async (req, res) => {
             });
           } else {
             const password = email + process.env.TOKEN_SECRET;
+            //Hash password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await hash(password, salt);
             const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
-            let newUser = new User({ name, surname, email, password, accountStatus, loginMethod: 2 });
+            let newUser = new User({ name, surname, email, password: hashedPassword, accountStatus, loginMethod: 2 });
             try {
               const newSavedUser = await newUser.save();
 
@@ -565,7 +571,12 @@ router.post('/edit-user', checkToken, async (req, res) => {
       });
     }
     if (role === AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR) {
-      const findModerator = await User.find({ localitate, oras });
+      const editUser = await User.findById(id);
+      const findModerator = await User.find({
+        localitate: editUser.localitate,
+        oras: editUser.oras,
+        role: AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR,
+      });
       if (findModerator.length) {
         findModerator[0].role = AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA;
         await findModerator[0].save();
