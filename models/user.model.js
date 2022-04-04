@@ -6,17 +6,14 @@ const userSchema = new Schema({
   name: {
     type: String,
     required: true,
-    minlength: 1,
   },
   surname: {
     type: String,
     required: true,
-    minlength: 1,
   },
   email: {
     type: String,
     required: true,
-    minlength: 1,
   },
   loginMethod: {
     type: Number,
@@ -25,7 +22,6 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    minlength: 1,
   },
   date: {
     type: Date,
