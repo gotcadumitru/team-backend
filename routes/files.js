@@ -7,6 +7,7 @@ const { createAndUploadFile, deleteFileFromGoogleDriveByFileId } = require('../u
 router.post('/upload', async (req, res) => {
   try {
     let files = req.files?.files ?? [];
+    console.log(req);
     if (!Array.isArray(files)) {
       files = [files];
     }
