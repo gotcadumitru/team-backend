@@ -529,6 +529,27 @@ router.get('/users/:oras/:localitate', checkToken, async (req, res) => {
   }
 });
 
+router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
+  try {
+    const { oras, localitate } = req.params;
+    const users = await User.find({ oras, localitate });
+    const usersFormated = users.map((user) => ({
+      ...user._doc,
+      id: user._id,
+    }));
+    res.status(200).json({
+      succes: true,
+      users: usersFormated,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+
 router.post('/change-user-status', checkToken, async (req, res) => {
   try {
     const { userId, isConfirmed } = req.body;

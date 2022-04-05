@@ -1,9 +1,11 @@
-const router = require("express").Router();
-const Message = require("../models/message.model");
+const router = require('express').Router();
+const Message = require('../models/message.model');
+const User = require('../models/user.model');
+const checkToken = require('./verifyToken');
 
 //add
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const newMessage = new Message(req.body);
 
   try {
@@ -16,11 +18,13 @@ router.post("/", async (req, res) => {
 
 //get
 
-router.get("/:conversationId", async (req, res) => {
-  const { conversationId } = req.params
+router.get('/all/:userId', checkToken, async (req, res) => {
+  const { userId } = req.params;
+
   try {
+    const user = await User.findById(userId);
     const messages = await Message.find({
-      conversationId,
+      $or: [{ receiverId: user._id }, { senderId: user._id }],
     });
     res.status(200).json(messages);
   } catch (err) {
