@@ -12,7 +12,7 @@ const AccountRole = require('../defaults/account-role');
 const File = require('../models/file.model');
 const router = require('express').Router();
 
-const client = new OAuth2Client('1057553385734-97f7heo0s1n4gvpvqa9q8qf6iati0rtd.apps.googleusercontent.com');
+const client = new OAuth2Client(process.env.GOOGLE_AUDIENCE_ID1);
 
 router.post('/register', async (req, res) => {
   const { name, surname, email, password, oras, localitate, files } = req.body;
@@ -119,7 +119,7 @@ router.post('/login', async (req, res) => {
 router.post('/googlelogin', async (req, res) => {
   const tokenId = req.body.token;
   client
-    .verifyIdToken({ idToken: tokenId, audience: '1057553385734-97f7heo0s1n4gvpvqa9q8qf6iati0rtd.apps.googleusercontent.com' })
+    .verifyIdToken({ idToken: tokenId, audience: [process.env.GOOGLE_AUDIENCE_ID1, process.env.GOOGLE_AUDIENCE_ID2] })
     .then(async (response) => {
       const { email_verified, email } = response.payload;
       const fullName = response.payload.name.split(' ');
@@ -509,27 +509,6 @@ router.get('/users-administrator/:oras/:localitate', checkToken, async (req, res
   }
 });
 router.get('/users/:oras/:localitate', checkToken, async (req, res) => {
-  try {
-    const { oras, localitate } = req.params;
-    const users = await User.find({ oras, localitate });
-    const usersFormated = users.map((user) => ({
-      ...user._doc,
-      id: user._id,
-    }));
-    res.status(200).json({
-      succes: true,
-      users: usersFormated,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: 'Something went wrong, hz ce',
-    });
-  }
-});
-
-router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
   try {
     const { oras, localitate } = req.params;
     const users = await User.find({ oras, localitate });

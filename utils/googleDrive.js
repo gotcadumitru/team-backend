@@ -4,12 +4,9 @@ const bytesToSize = require('./bytesToMb');
 
 const KEY_FILE_PATH = 'googleservice.json';
 
-const SKOPES = ['https://www.googleapis.com/auth/drive'];
-const FOLDER_ID = '1Qd9LE1ffuCr8_HvxoH6uY8Jek7POUr_j';
-
 const auth = new google.auth.GoogleAuth({
   keyFile: KEY_FILE_PATH,
-  scopes: SKOPES,
+  scopes: process.env.GOOGLE_DRIVE_SCOPE,
 });
 const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
@@ -23,7 +20,7 @@ const driveService = google.drive({ version: 'v3', auth });
 const createAndUploadFile = async (name, mimeType, path) => {
   const fileMetaData = {
     name,
-    parents: [FOLDER_ID],
+    parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
   };
 
   const media = {
