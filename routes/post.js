@@ -1,5 +1,6 @@
-const Other = require("../models/other.model");
 const Post = require("../models/post.model");
+const File = require("../models/file.model");
+const Comment = require("../models/comment.model");
 const checkToken = require("./verifyToken");
 const CATEGORIES_TYPES = require("../defaults/categories");
 const IMPORTANCE_LEVEL = require("../defaults/importance-level");
@@ -101,9 +102,28 @@ router.put("/:id", checkToken, async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const posts = await Post.find();
+    let posts = await Post.find();
+    posts = await Promise.all(posts.map(async (post) => {
+      const files = await File.find({
+        idFromDrive: { $in: post.files },
+      });
+      return {
+        ...post._doc,
+        files,
+      }
+    }))
+    posts = await Promise.all(posts.map(async (post) => {
+      const comments = await Comment.find({
+        idFromDrive: { $in: post.comments },
+      });
+      return {
+        ...post,
+        comments,
+      }
+    }))
+
     return res.status(200).send({
-      posts: posts,
+      posts,
       succes: true,
     });
   } catch (error) {
@@ -156,8 +176,15 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params
     const post = await Post.findById(id);
+    const files = await File.find({
+      idFromDrive: { $in: post.files },
+    });
+    console.log(post.files)
     return res.status(200).send({
-      post,
+      post: {
+        ...post._doc,
+        files: files
+      },
       succes: true,
     });
   } catch (error) {
