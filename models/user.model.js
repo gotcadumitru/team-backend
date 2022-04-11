@@ -1,19 +1,16 @@
-const { Schema, model } = require('mongoose');
-const AccountRole = require('../defaults/account-role');
-const AccountStatus = require('../defaults/account-status');
+const { Schema, model } = require("mongoose");
+const AccountRole = require("../defaults/account-role");
+const AccountStatus = require("../defaults/account-status");
 
 const userSchema = new Schema({
   name: {
     type: String,
-    required: true,
   },
   surname: {
     type: String,
-    required: true,
   },
   email: {
     type: String,
-    required: true,
   },
   loginMethod: {
     type: Number,
@@ -35,15 +32,22 @@ const userSchema = new Schema({
     type: String,
     default: AccountRole.SIMPLE_USER,
   },
-
+  birthday: {
+    type: Date,
+    default: Date.now,
+  },
+  profileImage: {
+    type: String,
+    default: "",
+  },
   localitate: {
     type: String,
-    default: '',
+    default: "",
   },
 
   oras: {
     type: String,
-    default: '',
+    default: "",
   },
 
   domiciliuFiles: [{ type: String }],
@@ -52,6 +56,6 @@ const userSchema = new Schema({
   resetPasswordToken: String,
 });
 
-const User = model('User', userSchema);
+const User = model("User", userSchema);
 
 module.exports = User;
