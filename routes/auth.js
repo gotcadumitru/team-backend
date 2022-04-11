@@ -1,27 +1,36 @@
-const { hash } = require('bcryptjs');
-const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
-const { sendMail } = require('../utils/sendMail');
-const checkToken = require('./verifyToken');
-const { OAuth2Client } = require('google-auth-library');
-const { default: fetch } = require('node-fetch');
-const AccountStatus = require('../defaults/account-status');
-const AccountRole = require('../defaults/account-role');
-const File = require('../models/file.model');
-const router = require('express').Router();
+const { hash } = require("bcryptjs");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user.model");
+const { sendMail } = require("../utils/sendMail");
+const checkToken = require("./verifyToken");
+const { OAuth2Client } = require("google-auth-library");
+const { default: fetch } = require("node-fetch");
+const AccountStatus = require("../defaults/account-status");
+const AccountRole = require("../defaults/account-role");
+const File = require("../models/file.model");
+const router = require("express").Router();
 
 const client = new OAuth2Client(process.env.GOOGLE_AUDIENCE_ID1);
 
-router.post('/register', async (req, res) => {
-  const { name, surname, email, password, oras, localitate, files } = req.body;
-
+router.post("/register", async (req, res) => {
+  const {
+    name,
+    surname,
+    email,
+    password,
+    oras,
+    localitate,
+    files,
+    profileImage,
+    birthday,
+  } = req.body;
   const emailExist = await User.findOne({ email });
   if (emailExist) {
     return res.status(400).json({
       succes: false,
-      message: 'Email already exist',
+      message: "Email already exist",
     });
   }
   //Hash password
@@ -29,9 +38,12 @@ router.post('/register', async (req, res) => {
   const hashedPassword = await hash(password, salt);
   const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
 
-  const confirmToken = crypto.randomBytes(20).toString('hex');
+  const confirmToken = crypto.randomBytes(20).toString("hex");
 
-  const confirmRegisterToken = crypto.createHash('sha256').update(confirmToken).digest('hex');
+  const confirmRegisterToken = crypto
+    .createHash("sha256")
+    .update(confirmToken)
+    .digest("hex");
   const newUser = new User({
     name,
     surname,
@@ -43,6 +55,8 @@ router.post('/register', async (req, res) => {
     oras,
     localitate,
     domiciliuFiles: files,
+    profileImage,
+    birthday,
   });
   try {
     const savedUser = await newUser.save();
@@ -54,7 +68,7 @@ router.post('/register', async (req, res) => {
     try {
       await sendMail({
         to: savedUser.email,
-        subject: 'Confirm Registration',
+        subject: "Confirm Registration",
         text: message,
       });
     } catch (err) {
@@ -62,50 +76,55 @@ router.post('/register', async (req, res) => {
       await findUser.save();
 
       res.status(400).json({
-        message: 'Email could not be send',
+        message: "Email could not be send",
       });
     }
-
+    const token = jwt.sign(
+      { _id: savedUser._id },
+      process.env.TOKEN_SECRET
+    );
     res.json({
-      message: 'Please follow the steps in the email',
+      message: "Please follow the steps in the email",
+      token,
     });
   } catch (err) {
     res.status(400).json({
       succes: false,
-      message: 'err',
+      message: "err",
     });
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
   if (!user) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid email or password',
+      message: "Invalid email or password",
     });
   }
   const validPass = await bcrypt.compare(password, user.password);
   if (!validPass) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid email or password',
+      message: "Invalid email or password",
     });
   }
 
   if (user.accountStatus === AccountStatus.BLOCKED) {
     return res.status(400).send({
       succes: false,
-      message: 'Your account is blocked',
+      message: "Your account is blocked",
     });
   }
 
   if (user.accountStatus === AccountStatus.REJECTED) {
     return res.status(400).send({
       succes: false,
-      message: 'Unfortunately, the administrators decided not to confirm your account',
+      message:
+        "Unfortunately, the administrators decided not to confirm your account",
     });
   }
   //create and assign a token
@@ -116,13 +135,19 @@ router.post('/login', async (req, res) => {
   });
 });
 
-router.post('/googlelogin', async (req, res) => {
+router.post("/googlelogin", async (req, res) => {
   const tokenId = req.body.token;
   client
-    .verifyIdToken({ idToken: tokenId, audience: [process.env.GOOGLE_AUDIENCE_ID1, process.env.GOOGLE_AUDIENCE_ID2] })
+    .verifyIdToken({
+      idToken: tokenId,
+      audience: [
+        process.env.GOOGLE_AUDIENCE_ID1,
+        process.env.GOOGLE_AUDIENCE_ID2,
+      ],
+    })
     .then(async (response) => {
       const { email_verified, email } = response.payload;
-      const fullName = response.payload.name.split(' ');
+      const fullName = response.payload.name.split(" ");
       const surname = fullName[0];
       const name = fullName[1];
 
@@ -133,18 +158,22 @@ router.post('/googlelogin', async (req, res) => {
             if (user.accountStatus === AccountStatus.BLOCKED) {
               return res.status(400).send({
                 succes: false,
-                message: 'Your account is blocked',
+                message: "Your account is blocked",
               });
             }
 
             if (user.accountStatus === AccountStatus.REJECTED) {
               return res.status(400).send({
                 succes: false,
-                message: 'Unfortunately, the administrators decided not to confirm your account',
+                message:
+                  "Unfortunately, the administrators decided not to confirm your account",
               });
             }
 
-            const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+            const token = jwt.sign(
+              { _id: user._id },
+              process.env.TOKEN_SECRET
+            );
             res.status(200).json({
               succes: true,
               token: token,
@@ -154,12 +183,23 @@ router.post('/googlelogin', async (req, res) => {
             //Hash password
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await hash(password, salt);
-            const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
-            let newUser = new User({ name, surname, email, password: hashedPassword, accountStatus, loginMethod: 1 });
+            const accountStatus =
+              AccountStatus.WAITING_FOR_CONFIRMATION;
+            let newUser = new User({
+              name,
+              surname,
+              email,
+              password: hashedPassword,
+              accountStatus,
+              loginMethod: 1,
+            });
             try {
               const newSavedUser = await newUser.save();
 
-              const token = jwt.sign({ _id: newSavedUser._id }, process.env.TOKEN_SECRET);
+              const token = jwt.sign(
+                { _id: newSavedUser._id },
+                process.env.TOKEN_SECRET
+              );
               res.status(200).json({
                 succes: true,
                 token: token,
@@ -167,31 +207,31 @@ router.post('/googlelogin', async (req, res) => {
             } catch (err) {
               res.status(400).json({
                 succes: false,
-                message: 'Somthing was wrong1',
+                message: "Somthing was wrong1",
               });
             }
           }
         } catch (err) {
           res.status(400).json({
             succes: false,
-            message: 'Somthing was wrong2',
+            message: "Somthing was wrong2",
           });
         }
       }
     });
 });
 
-router.post('/facebooklogin', async (req, res) => {
+router.post("/facebooklogin", async (req, res) => {
   const { token, userID } = req.body;
   const urlGraphFacebook = `https://graph.facebook.com/v2.11/${userID}/?fields=id,name,email&access_token=${token}`;
   try {
     const resJSON = await fetch(urlGraphFacebook, {
-      method: 'GET',
+      method: "GET",
     });
     try {
       const response = await resJSON.json();
       const { email } = response;
-      const fullName = response.name.split(' ');
+      const fullName = response.name.split(" ");
       const surname = fullName[0];
       const name = fullName[1];
       if (email) {
@@ -201,18 +241,22 @@ router.post('/facebooklogin', async (req, res) => {
             if (user.accountStatus === AccountStatus.BLOCKED) {
               return res.status(400).send({
                 succes: false,
-                message: 'Your account is blocked',
+                message: "Your account is blocked",
               });
             }
 
             if (user.accountStatus === AccountStatus.REJECTED) {
               return res.status(400).send({
                 succes: false,
-                message: 'Unfortunately, the administrators decided not to confirm your account',
+                message:
+                  "Unfortunately, the administrators decided not to confirm your account",
               });
             }
 
-            const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+            const token = jwt.sign(
+              { _id: user._id },
+              process.env.TOKEN_SECRET
+            );
             return res.status(200).json({
               succes: true,
               token: token,
@@ -222,12 +266,23 @@ router.post('/facebooklogin', async (req, res) => {
             //Hash password
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await hash(password, salt);
-            const accountStatus = AccountStatus.WAITING_FOR_CONFIRMATION;
-            let newUser = new User({ name, surname, email, password: hashedPassword, accountStatus, loginMethod: 2 });
+            const accountStatus =
+              AccountStatus.WAITING_FOR_CONFIRMATION;
+            let newUser = new User({
+              name,
+              surname,
+              email,
+              password: hashedPassword,
+              accountStatus,
+              loginMethod: 2,
+            });
             try {
               const newSavedUser = await newUser.save();
 
-              const token = jwt.sign({ _id: newSavedUser._id }, process.env.TOKEN_SECRET);
+              const token = jwt.sign(
+                { _id: newSavedUser._id },
+                process.env.TOKEN_SECRET
+              );
               res.status(200).json({
                 succes: true,
                 token: token,
@@ -235,48 +290,51 @@ router.post('/facebooklogin', async (req, res) => {
             } catch (err) {
               res.status(400).json({
                 succes: false,
-                message: 'Somthing was wrong1',
+                message: "Somthing was wrong1",
               });
             }
           }
         } catch (err) {
           res.status(400).json({
             succes: false,
-            message: 'Somthing was wrong2',
+            message: "Somthing was wrong2",
           });
         }
       } else {
         res.status(400).json({
           succes: false,
-          message: 'Somthing was wrong3',
+          message: "Somthing was wrong3",
         });
       }
     } catch (err) {
       res.status(400).json({
         succes: false,
-        message: 'Somthing was wrong4',
+        message: "Somthing was wrong4",
       });
     }
   } catch (err) {
     res.status(400).json({
       succes: false,
-      message: 'Somthing was wrong5',
+      message: "Somthing was wrong5",
     });
   }
 });
 
-router.post('/forgotpassword', async (req, res) => {
+router.post("/forgotpassword", async (req, res) => {
   const { email } = req.body;
   try {
     const findUser = await User.findOne({ email: email });
     if (!findUser) {
       return res.status(404).json({
         succes: false,
-        message: 'Email could not be send',
+        message: "Email could not be send",
       });
     }
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    findUser.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    findUser.resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
     const savedUser = await findUser.save();
 
     const resetUrl = `https://localhost:3000/auth/resetpassword/${resetToken}`;
@@ -289,12 +347,12 @@ router.post('/forgotpassword', async (req, res) => {
     try {
       await sendMail({
         to: savedUser.email,
-        subject: 'Password Reset',
+        subject: "Password Reset",
         text: message,
       });
       res.status(200).json({
         succes: true,
-        message: 'Email was send',
+        message: "Email was send",
       });
     } catch (err) {
       findUser.resetPasswordToken = undefined;
@@ -302,25 +360,28 @@ router.post('/forgotpassword', async (req, res) => {
 
       res.status(400).json({
         succes: false,
-        message: 'Email could not be send',
+        message: "Email could not be send",
       });
     }
   } catch (err) {
     res.status(400).json({
       succes: false,
-      message: 'Other Error',
+      message: "Other Error",
     });
   }
 });
-router.post('/resetpassword/:resetToken', async (req, res) => {
-  const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+router.post("/resetpassword/:resetToken", async (req, res) => {
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.resetToken)
+    .digest("hex");
 
   try {
     const findUser = await User.findOne({ resetPasswordToken });
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid reset Token',
+        message: "Invalid reset Token",
       });
     }
     const salt = await bcrypt.genSalt(10);
@@ -331,17 +392,17 @@ router.post('/resetpassword/:resetToken', async (req, res) => {
     await findUser.save();
     return res.status(200).json({
       succes: true,
-      message: 'Password Reset Succes',
+      message: "Password Reset Succes",
     });
   } catch (error) {
     return res.status(400).json({
       succes: false,
-      message: 'error',
+      message: "error",
     });
   }
 });
 
-router.post('/changepassword', checkToken, async (req, res) => {
+router.post("/changepassword", checkToken, async (req, res) => {
   const { user } = req;
   const { oldPassword, newPassword } = req.body;
 
@@ -349,7 +410,7 @@ router.post('/changepassword', checkToken, async (req, res) => {
   if (!validPass) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid password',
+      message: "Invalid password",
     });
   }
 
@@ -362,48 +423,59 @@ router.post('/changepassword', checkToken, async (req, res) => {
 
     return res.status(200).json({
       succes: true,
-      data: 'Password changed successfully',
+      data: "Password changed successfully",
     });
   } catch (e) {
     return res.status(400).json({
       succes: false,
-      message: 'Error change password',
+      message: "Error change password",
     });
   }
 });
 
-router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
-  const confirmRegisterToken = crypto.createHash('sha256').update(req.params.confirmRegisterToken).digest('hex');
+router.post(
+  "/confirmRegister/:confirmRegisterToken",
+  async (req, res) => {
+    const confirmRegisterToken = crypto
+      .createHash("sha256")
+      .update(req.params.confirmRegisterToken)
+      .digest("hex");
 
-  try {
-    const findUser = await User.findOne({ confirmRegisterToken });
-    if (!findUser) {
+    try {
+      const findUser = await User.findOne({ confirmRegisterToken });
+      if (!findUser) {
+        return res.status(400).json({
+          succes: false,
+          message: "Invalid Confirm Register Token",
+        });
+      }
+
+      findUser.accountStatus = AccountStatus.CONFIRMED;
+      findUser.confirmRegisterToken = "";
+      const token = jwt.sign(
+        { _id: findUser._id },
+        process.env.TOKEN_SECRET
+      );
+      await findUser.save();
+      return res.status(200).json({
+        succes: true,
+        token: token,
+        message: "Account succesful confirmed",
+      });
+    } catch (error) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid Confirm Register Token',
+        message: "error",
       });
     }
-
-    findUser.accountStatus = AccountStatus.CONFIRMED;
-    findUser.confirmRegisterToken = '';
-    const token = jwt.sign({ _id: findUser._id }, process.env.TOKEN_SECRET);
-    await findUser.save();
-    return res.status(200).json({
-      succes: true,
-      token: token,
-      message: 'Account succesful confirmed',
-    });
-  } catch (error) {
-    return res.status(400).json({
-      succes: false,
-      message: 'error',
-    });
   }
-});
+);
 
-router.get('/me', checkToken, async (req, res) => {
+router.get("/me", checkToken, async (req, res) => {
   if (req.user) {
-    const domiciliuFiles = await File.find({ idFromDrive: { $in: req.user.domiciliuFiles } });
+    const domiciliuFiles = await File.find({
+      idFromDrive: { $in: req.user.domiciliuFiles },
+    });
     res.status(200).json({
       succes: true,
       user: {
@@ -415,162 +487,195 @@ router.get('/me', checkToken, async (req, res) => {
   } else {
     return res.status(400).json({
       succes: false,
-      message: 'Acces denied',
+      message: "Acces denied",
     });
   }
 });
 
-router.get('/users-to-confirm/:oras/:localitate', checkToken, async (req, res) => {
-  try {
-    const { oras, localitate } = req.params;
-    const users = await User.find({
-      oras,
-      localitate,
-      accountStatus: AccountStatus.WAITING_FOR_CONFIRMATION,
-      'domiciliuFiles.0': { $exists: true },
-    });
-    const usersFormated = users.map((user) => ({
-      ...user._doc,
-      id: user._id,
-    }));
-    await Promise.all(
-      usersFormated.map(async (user) => {
-        const domiciliuFiles = await File.find({ idFromDrive: { $in: user.domiciliuFiles } });
-        return (user.domiciliuFiles = domiciliuFiles);
-      }),
-    );
-    res.status(200).json({
-      succes: true,
-      users: usersFormated,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: 'Something went wrong, hz ce',
-    });
+router.get(
+  "/users-to-confirm/:oras/:localitate",
+  checkToken,
+  async (req, res) => {
+    try {
+      const { oras, localitate } = req.params;
+      const users = await User.find({
+        oras,
+        localitate,
+        accountStatus: AccountStatus.WAITING_FOR_CONFIRMATION,
+        "domiciliuFiles.0": { $exists: true },
+      });
+      const usersFormated = users.map((user) => ({
+        ...user._doc,
+        id: user._id,
+      }));
+      await Promise.all(
+        usersFormated.map(async (user) => {
+          const domiciliuFiles = await File.find({
+            idFromDrive: { $in: user.domiciliuFiles },
+          });
+          return (user.domiciliuFiles = domiciliuFiles);
+        })
+      );
+      res.status(200).json({
+        succes: true,
+        users: usersFormated,
+      });
+    } catch (err) {
+      return res.status(400).json({
+        succes: false,
+        message: "Something went wrong, hz ce",
+      });
+    }
   }
-});
-router.get('/users-moderatori/:oras/:localitate', checkToken, async (req, res) => {
-  try {
-    const { oras, localitate } = req.params;
-    const users = await User.find({
-      oras,
-      localitate,
-      accountStatus: AccountStatus.CONFIRMED,
-      role: AccountRole.MODERATOR,
-    });
-    const usersFormated = users.map((user) => ({
-      ...user._doc,
-      id: user._id,
-    }));
-    res.status(200).json({
-      succes: true,
-      users: usersFormated,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: 'Something went wrong, hz ce',
-    });
+);
+router.get(
+  "/users-moderatori/:oras/:localitate",
+  checkToken,
+  async (req, res) => {
+    try {
+      const { oras, localitate } = req.params;
+      const users = await User.find({
+        oras,
+        localitate,
+        accountStatus: AccountStatus.CONFIRMED,
+        role: AccountRole.MODERATOR,
+      });
+      const usersFormated = users.map((user) => ({
+        ...user._doc,
+        id: user._id,
+      }));
+      res.status(200).json({
+        succes: true,
+        users: usersFormated,
+      });
+    } catch (err) {
+      return res.status(400).json({
+        succes: false,
+        message: "Something went wrong, hz ce",
+      });
+    }
   }
-});
+);
 
-router.get('/users-administrator/:oras/:localitate', checkToken, async (req, res) => {
-  try {
-    const { oras, localitate } = req.params;
-    const users = await User.find({
-      oras,
-      localitate,
-      accountStatus: AccountStatus.CONFIRMED,
-      role: {
-        $in: [
-          AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA,
-          AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR,
-          AccountRole.ADMINISTRATOR,
-        ],
-      },
-    });
-    const usersFormated = users.map((user) => ({
-      ...user._doc,
-      id: user._id,
-    }));
-    res.status(200).json({
-      succes: true,
-      users: usersFormated,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: 'Something went wrong, hz ce',
-    });
+router.get(
+  "/users-administrator/:oras/:localitate",
+  checkToken,
+  async (req, res) => {
+    try {
+      const { oras, localitate } = req.params;
+      const users = await User.find({
+        oras,
+        localitate,
+        accountStatus: AccountStatus.CONFIRMED,
+        role: {
+          $in: [
+            AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA,
+            AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR,
+            AccountRole.ADMINISTRATOR,
+          ],
+        },
+      });
+      const usersFormated = users.map((user) => ({
+        ...user._doc,
+        id: user._id,
+      }));
+      res.status(200).json({
+        succes: true,
+        users: usersFormated,
+      });
+    } catch (err) {
+      return res.status(400).json({
+        succes: false,
+        message: "Something went wrong, hz ce",
+      });
+    }
   }
-});
-router.get('/users/:oras/:localitate', checkToken, async (req, res) => {
-  try {
-    const { oras, localitate } = req.params;
-    const users = await User.find({ oras, localitate });
-    const usersFormated = users.map((user) => ({
-      ...user._doc,
-      id: user._id,
-    }));
-    res.status(200).json({
-      succes: true,
-      users: usersFormated,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: 'Something went wrong, hz ce',
-    });
+);
+router.get(
+  "/users/:oras/:localitate",
+  checkToken,
+  async (req, res) => {
+    try {
+      const { oras, localitate } = req.params;
+      const users = await User.find({ oras, localitate });
+      const usersFormated = users.map((user) => ({
+        ...user._doc,
+        id: user._id,
+      }));
+      res.status(200).json({
+        succes: true,
+        users: usersFormated,
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(400).json({
+        succes: false,
+        message: "Something went wrong, hz ce",
+      });
+    }
   }
-});
+);
 
-router.post('/change-user-status', checkToken, async (req, res) => {
+router.post("/change-user-status", checkToken, async (req, res) => {
   try {
     const { userId, isConfirmed } = req.body;
     const findUser = await User.findById(userId);
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid user id',
+        message: "Invalid user id",
       });
     }
-    if (typeof isConfirmed != 'boolean') {
+    if (typeof isConfirmed != "boolean") {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid status',
+        message: "Invalid status",
       });
     }
-    findUser.accountStatus = isConfirmed ? AccountStatus.CONFIRMED : AccountStatus.REJECTED;
+    findUser.accountStatus = isConfirmed
+      ? AccountStatus.CONFIRMED
+      : AccountStatus.REJECTED;
     await findUser.save();
     res.status(200).json({
       succes: true,
-      message: 'User Status has been successfully modified',
+      message: "User Status has been successfully modified",
       user: findUser,
     });
   } catch (err) {
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: "Something went wrong, hz ce",
     });
   }
 });
 
-router.post('/edit-user', checkToken, async (req, res) => {
+router.post("/edit-user", checkToken, async (req, res) => {
+  console.log(req.body);
   try {
-    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuFiles } = req.body;
+    const {
+      name,
+      id,
+      surname,
+      email,
+      role,
+      accountStatus,
+      oras,
+      localitate,
+      domiciliuFiles,
+      profileImage,
+      birthday,
+    } = req.body;
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid user id',
+        message: "Invalid user id",
       });
     }
-    if (role === AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR) {
+    if (
+      role ===
+      AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR
+    ) {
       const editUser = await User.findById(id);
       const findModerator = await User.find({
         localitate: editUser.localitate,
@@ -578,7 +683,8 @@ router.post('/edit-user', checkToken, async (req, res) => {
         role: AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR,
       });
       if (findModerator.length) {
-        findModerator[0].role = AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA;
+        findModerator[0].role =
+          AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA;
         await findModerator[0].save();
       }
     }
@@ -589,19 +695,22 @@ router.post('/edit-user', checkToken, async (req, res) => {
     findUser.email = email ?? findUser.email;
     findUser.name = name ?? findUser.name;
     findUser.surname = surname ?? findUser.surname;
-    findUser.domiciliuFiles = domiciliuFiles ?? findUser.domiciliuFiles;
+    findUser.profileImage = profileImage ?? findUser.profileImage;
+    findUser.birthday = birthday ?? findUser.birthday;
+
+    findUser.domiciliuFiles =
+      domiciliuFiles ?? findUser.domiciliuFiles;
 
     await findUser.save();
     res.status(200).json({
       succes: true,
-      message: 'User has been successfully modified',
+      message: "User has been successfully modified",
       user: { ...findUser._doc, id: findUser._id },
     });
   } catch (err) {
-    console.log(err);
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: "Something went wrong, hz ce",
     });
   }
 });

@@ -1,8 +1,9 @@
-const Other = require('../models/other.model');
-const Post = require('../models/post.model');
-const checkToken = require('./verifyToken');
-const router = require('express').Router();
-router.get('/', async (req, res) => {
+const Other = require("../models/other.model");
+const Post = require("../models/post.model");
+const checkToken = require("./verifyToken");
+const router = require("express").Router();
+
+router.get("/", async (req, res) => {
   try {
     const findOther = await Other.find();
 
@@ -14,12 +15,12 @@ router.get('/', async (req, res) => {
     console.log(err);
     res.status(400).json({
       succes: false,
-      message: 'Not authorized',
+      message: "Not authorized",
     });
   }
 });
 
-router.post('/new', checkToken, async (req, res) => {
+router.post("/new", checkToken, async (req, res) => {
   try {
     const { title, description, files } = req.body;
     const newPost = new Post({
@@ -39,13 +40,13 @@ router.post('/new', checkToken, async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: 'Something went wrong',
+      message: "Something went wrong",
       succes: false,
     });
   }
 });
 
-router.get('/all', async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const allPosts = await Post.find();
     return res.status(200).send({
@@ -54,12 +55,12 @@ router.get('/all', async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: 'Something went wrong',
+      message: "Something went wrong",
       succes: false,
     });
   }
 });
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     return res.status(200).send({
       newPost,
@@ -67,7 +68,7 @@ router.get('/:id', async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: 'Something went wrong',
+      message: "Something went wrong",
       succes: false,
     });
   }
