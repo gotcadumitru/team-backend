@@ -2,26 +2,71 @@ const { Schema, model } = require('mongoose');
 
 const postSchema = Schema(
   {
-    name: {
+    title: {
       type: String,
-      required: true,
     },
     description: {
       type: String,
-      required: true,
     },
-    createdBy: {
-      userName: {
-        type: String,
-      },
-      userSurname: {
-        type: String,
-      },
-      userId: {
-        type: String,
-      },
+    author: {
+      type: String,
     },
-    files: [{ type: String }],
+    location: {
+      lat: {
+        type: String
+      },
+
+      long: {
+        type: String
+      }
+
+    },
+    likes: [
+      {
+        type: String
+      }
+    ],
+
+    disLikes: [
+      {
+        type: String
+      }
+    ],
+
+    category: {
+      type: Number
+    },
+    tags: [
+      {
+        type: String
+      }
+    ],
+    reportId: {
+      type: String
+    },
+
+    comments: [
+      {
+        type: String
+      }
+    ],
+    labelLocation: {
+      type: String
+    },
+
+    importanceLevel: {
+      type: Number,
+    },
+    priority: {
+      type: Number
+    },
+
+    files: [
+      {
+        type: String
+      }
+    ],
+
   },
   {
     timestamps: true,
