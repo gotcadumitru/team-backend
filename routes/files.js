@@ -1,6 +1,5 @@
 const checkToken = require("./verifyToken");
 const File = require("../models/file.model");
-const fs = require("fs");
 const router = require("express").Router();
 const {
   createAndUploadFile,
