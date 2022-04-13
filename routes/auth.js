@@ -476,12 +476,16 @@ router.get("/me", checkToken, async (req, res) => {
     const domiciliuFiles = await File.find({
       idFromDrive: { $in: req.user.domiciliuFiles },
     });
+    const profileImage = await File.findOne({
+      idFromDrive: req.user.profileImage,
+    });
     res.status(200).json({
       succes: true,
       user: {
         id: req.user._id,
         ...req.user._doc,
         domiciliuFiles,
+        profileImage,
       },
     });
   } else {
