@@ -1,13 +1,14 @@
 const { google } = require('googleapis');
 const fs = require('fs');
 const bytesToSize = require('./bytesToMb');
-
+const { Readable } = require('stream');
 const KEY_FILE_PATH = 'googleservice.json';
 
 const auth = new google.auth.GoogleAuth({
   keyFile: KEY_FILE_PATH,
   scopes: process.env.GOOGLE_DRIVE_SCOPE,
 });
+
 const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.mp4': 'video/mp4',
@@ -17,15 +18,25 @@ const MIME_TYPES = {
 };
 const driveService = google.drive({ version: 'v3', auth });
 
-const createAndUploadFile = async (name, mimeType, path) => {
+function bufferToStream(binary) {
+
+  const readableInstanceStream = new Readable({
+    read() {
+      this.push(binary);
+      this.push(null);
+    }
+  });
+
+  return readableInstanceStream;
+}
+const createAndUploadFile = async ({ mimetype, name, data }) => {
   const fileMetaData = {
     name,
     parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
   };
-
   const media = {
-    mimeType,
-    body: fs.createReadStream(path),
+    mimeType: mimetype,
+    body: bufferToStream(data),
   };
 
   try {
@@ -95,4 +106,5 @@ const createFolder = (name) => {
     },
   );
 };
+
 module.exports = { createAndUploadFile, createFolder, deleteFileFromGoogleDriveByFileId, auth, MIME_TYPES };
