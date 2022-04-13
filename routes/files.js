@@ -10,21 +10,14 @@ const {
 router.post("/upload", async (req, res) => {
   try {
     let files = req.files?.files ?? [];
-    console.log(req.files);
     if (!Array.isArray(files)) {
       files = [files];
     }
 
     const uploadedFiles = await Promise.all(
       files.map(async (file) => {
-        const path =
-          "./uploads/" +
-          new Date().getTime() +
-          Math.random() +
-          file.name;
-        await file.mv(path);
         const { fileUrl, idFromDrive, size, downloadLink } =
-          await createAndUploadFile(file.name, file.mimetype, path);
+          await createAndUploadFile(file);
         const newFileData = {
           mimetype: file.mimetype,
           name: file.name,
@@ -36,7 +29,6 @@ router.post("/upload", async (req, res) => {
 
         const newFile = new File(newFileData);
         await newFile.save();
-        fs.unlinkSync(path);
         return newFileData;
       })
     );
