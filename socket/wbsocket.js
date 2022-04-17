@@ -29,6 +29,21 @@ const startWebSocketServer = () => {
       io.emit('getUsers', users);
     });
 
+    socket.on('makeMessageRead', async (messagesId) => {
+      await Promise.all(
+        messagesId.map(async (messageId) => {
+          return await Message.findByIdAndUpdate({ _id: messageId }, { $set: { isMessageRead: true } });
+        }),
+      );
+      const message = await Message.findById(messagesId[0]);
+      const users = getUsers(message.receiverId);
+      console.log(message);
+      console.log(users);
+      users.forEach((user) => {
+        io.to(user.socketId).emit('makeMessageRead', messagesId);
+      });
+    });
+
     socket.on('sendMessage', async ({ senderId, receiverId, text, moderatorId }) => {
       const users = getUsers(receiverId);
       const senderUser = getUsers(senderId);

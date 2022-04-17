@@ -56,7 +56,9 @@ router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
       .map((user) => ({
         ...user._doc,
         id: user._id,
+        messages: user.messages,
       }));
+
     res.status(200).json({
       succes: true,
       users: usersFormated,
@@ -67,6 +69,39 @@ router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
       succes: false,
       message: 'Something went wrong, hz ce',
     });
+  }
+});
+router.get('/new-messages/:reciverId', checkToken, async (req, res) => {
+  try {
+    const reciverId = decodeURIComponent(req.params.reciverId);
+    const messages = await Message.find({ receiverId: reciverId, isMessageRead: false });
+
+    res.status(200).json({
+      succes: true,
+      messagesId: messages.map((message) => message._id),
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      succes: false,
+      message: 'Something went wrong, hz ce',
+    });
+  }
+});
+
+router.put('/set-read', checkToken, async (req, res) => {
+  const { messagesId } = req.body;
+
+  try {
+    await Promise.all(
+      messagesId.map(async (messageId) => {
+        return await Message.findByIdAndUpdate({ _id: messageId }, { $set: { isMessageRead: true } });
+      }),
+    );
+
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
 

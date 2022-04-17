@@ -7,6 +7,7 @@ const getMessageFullType = async (message) => {
     createdAt: message.createdAt,
     updatedAt: message.updatedAt,
     text: message.text,
+    isMessageRead: message.isMessageRead,
     _id: message._id,
   };
   if (message.receiverId && isValidObjectId(message.receiverId)) {
