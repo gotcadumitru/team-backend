@@ -1,5 +1,6 @@
 const Message = require('../models/message.model');
 const socketIo = require('socket.io');
+const { getMessageFullType } = require('../utils/message');
 let users = [];
 
 const addUser = (userId, socketId) => {
@@ -13,10 +14,11 @@ const removeUsers = (socketId) => {
 const getUsers = (userId) => {
   return users.filter((user) => user.userId === userId);
 };
+
 const startWebSocketServer = () => {
   const io = socketIo(8900, {
     cors: {
-      origin: 'https://localhost:3000',
+      origin: process.env.FRONT_END_ORIGIN,
     },
   });
   io.on('connection', (socket) => {
@@ -27,23 +29,20 @@ const startWebSocketServer = () => {
       io.emit('getUsers', users);
     });
 
-    socket.on('sendMessage', ({ senderId, receiverId, text }) => {
+    socket.on('sendMessage', async ({ senderId, receiverId, text, moderatorId }) => {
       const users = getUsers(receiverId);
-      if (users.length) {
-        users.forEach((user) => {
-          io.to(user.socketId).emit('getMessage', {
-            senderId,
-            receiverId,
-            text,
-          });
-        });
-      }
-
+      const senderUser = getUsers(senderId);
       const message = new Message({
         senderId,
         receiverId,
         text,
+        moderatorId,
       });
+      const messageFullType = await getMessageFullType(message);
+      [...senderUser, ...users].forEach((user) => {
+        io.to(user.socketId).emit('getMessage', messageFullType);
+      });
+
       message.save();
     });
 

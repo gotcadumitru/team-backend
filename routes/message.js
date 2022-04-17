@@ -3,6 +3,7 @@ const { isValidObjectId } = require('mongoose');
 const AccountRole = require('../defaults/account-role');
 const Message = require('../models/message.model');
 const User = require('../models/user.model');
+const { getMessageFullType } = require('../utils/message');
 const checkToken = require('./verifyToken');
 
 //add
@@ -28,7 +29,10 @@ router.get('/all/:userId', checkToken, async (req, res) => {
     const messages = await Message.find({
       $or: [{ receiverId: user._id }, { senderId: user._id }],
     });
-    res.status(200).json(messages);
+
+    const messagesWithUserData = await Promise.all(messages.map(getMessageFullType));
+
+    res.status(200).json({ messages: messagesWithUserData });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -36,15 +40,13 @@ router.get('/all/:userId', checkToken, async (req, res) => {
 
 router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
   try {
-    const authUser = req.user;
     const { oras, localitate } = req.params;
-    const users = await User.find({ oras, localitate, _id: { $ne: authUser._id }, role: AccountRole.SIMPLE_USER });
+    const users = await User.find({ oras, localitate });
     await Promise.all(
       users.map(async (user) => {
         const messages = await Message.find({
           $or: [{ receiverId: user._id }, { senderId: user._id }],
         });
-        console.log(messages);
         return (user.messages = messages);
       }),
     );
