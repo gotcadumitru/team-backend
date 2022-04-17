@@ -7,9 +7,10 @@ const getUserFullType = async (user) => {
   const profileImage = await File.findOne({
     idFromDrive: user.profileImage,
   });
+  const { password, ...userData } = user._doc;
   return {
     id: user._id,
-    ...user._doc,
+    ...userData,
     domiciliuFiles,
     profileImage,
   };

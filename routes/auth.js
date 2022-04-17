@@ -11,6 +11,7 @@ const AccountStatus = require('../defaults/account-status');
 const AccountRole = require('../defaults/account-role');
 const File = require('../models/file.model');
 const { getUserFullType } = require('../utils/user');
+const LOGIN_METHOD = require('../defaults/login');
 const router = require('express').Router();
 
 const client = new OAuth2Client(process.env.GOOGLE_AUDIENCE_ID1);
@@ -39,7 +40,7 @@ router.post('/register', async (req, res) => {
     password: hashedPassword,
     accountStatus,
     confirmRegisterToken,
-    loginMethod: 0,
+    loginMethod: LOGIN_METHOD.REGISTER,
     oras,
     localitate,
     domiciliuFiles: files,
@@ -166,7 +167,7 @@ router.post('/googlelogin', async (req, res) => {
             email,
             password: hashedPassword,
             accountStatus,
-            loginMethod: 1,
+            loginMethod: LOGIN_METHOD.GOOGLE,
           });
           try {
             const newSavedUser = await newUser.save();
@@ -247,7 +248,7 @@ router.post('/facebooklogin', async (req, res) => {
               email,
               password: hashedPassword,
               accountStatus,
-              loginMethod: 2,
+              loginMethod: LOGIN_METHOD.FACEBOOK,
             });
             try {
               const newSavedUser = await newUser.save();
