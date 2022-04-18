@@ -1,9 +1,7 @@
 const router = require('express').Router();
-const { isValidObjectId } = require('mongoose');
-const AccountRole = require('../defaults/account-role');
 const Message = require('../models/message.model');
 const User = require('../models/user.model');
-const { getMessageFullType } = require('../utils/message');
+const { getMessageFullType, getMessageSmallType } = require('../utils/message');
 const checkToken = require('./verifyToken');
 
 //add
@@ -26,11 +24,9 @@ router.get('/all/:userId', checkToken, async (req, res) => {
 
   try {
     const user = await User.findById(userId);
-    const messages = await Message.find({
-      $or: [{ receiverId: user._id }, { senderId: user._id }],
-    });
+    const messages = await Message.find({ $or: [{ receiverId: user._id }, { senderId: user._id }] });
 
-    const messagesWithUserData = await Promise.all(messages.map(getMessageFullType));
+    const messagesWithUserData = await Promise.all(messages.map(getMessageSmallType));
 
     res.status(200).json({ messages: messagesWithUserData });
   } catch (err) {
@@ -38,16 +34,15 @@ router.get('/all/:userId', checkToken, async (req, res) => {
   }
 });
 
-router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
+router.get('/chats/:oras/:localitate', async (req, res) => {
   try {
     const { oras, localitate } = req.params;
     const users = await User.find({ oras, localitate });
     await Promise.all(
       users.map(async (user) => {
-        const messages = await Message.find({
-          $or: [{ receiverId: user._id }, { senderId: user._id }],
-        });
-        return (user.messages = messages);
+        const messages = await Message.find({ $or: [{ receiverId: user._id }, { senderId: user._id }] });
+        const messagesFullInfo = await Promise.all(messages.map(getMessageSmallType));
+        return (user.messages = messagesFullInfo);
       }),
     );
 
@@ -57,7 +52,13 @@ router.get('/chats/:oras/:localitate', checkToken, async (req, res) => {
         ...user._doc,
         id: user._id,
         messages: user.messages,
-      }));
+      }))
+      .sort((user1, user2) => {
+        return (
+          new Date(user2.messages[user2.messages.length - 1].createdAt).getTime() -
+          new Date(user1.messages[user1.messages.length - 1].createdAt).getTime()
+        );
+      });
 
     res.status(200).json({
       succes: true,
