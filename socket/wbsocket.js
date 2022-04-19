@@ -17,7 +17,7 @@ const getUsers = (userId) => {
 const startWebSocketServer = () => {
   const io = socketIo(8900, {
     cors: {
-      origin: process.env.FRONT_END_ORIGIN,
+      origin: '*',
     },
   });
   io.on('connection', (socket) => {
