@@ -17,7 +17,7 @@ const router = require('express').Router();
 const client = new OAuth2Client(process.env.GOOGLE_AUDIENCE_ID1);
 
 router.post('/register', async (req, res) => {
-  const { name, surname, email, password, oras, localitate, files, profileImage, birthday } = req.body;
+  const { name, surname, email, password, oras, localitate, files, profileImage, birthday, phoneNo } = req.body;
   const emailExist = await User.findOne({ email });
   if (emailExist) {
     return res.status(400).json({
@@ -46,6 +46,7 @@ router.post('/register', async (req, res) => {
     domiciliuFiles: files,
     profileImage,
     birthday,
+    phoneNo,
   });
   try {
     const savedUser = await newUser.save();
@@ -565,7 +566,7 @@ router.post('/change-user-status', checkToken, async (req, res) => {
 
 router.post('/edit-user', checkToken, async (req, res) => {
   try {
-    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuFiles, profileImage, birthday } = req.body;
+    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuFiles, profileImage, birthday, phoneNo } = req.body;
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
@@ -594,6 +595,7 @@ router.post('/edit-user', checkToken, async (req, res) => {
     findUser.surname = surname ?? findUser.surname;
     findUser.profileImage = profileImage ?? findUser.profileImage;
     findUser.birthday = birthday ?? findUser.birthday;
+    findUser.phoneNo = phoneNo ?? findUser.phoneNo;
 
     findUser.domiciliuFiles = domiciliuFiles ?? findUser.domiciliuFiles;
 

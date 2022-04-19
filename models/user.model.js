@@ -1,6 +1,6 @@
-const { Schema, model } = require("mongoose");
-const AccountRole = require("../defaults/account-role");
-const AccountStatus = require("../defaults/account-status");
+const { Schema, model } = require('mongoose');
+const AccountRole = require('../defaults/account-role');
+const AccountStatus = require('../defaults/account-status');
 
 const userSchema = new Schema({
   name: {
@@ -36,18 +36,22 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  phoneNo: {
+    type: String,
+    default: '',
+  },
   profileImage: {
     type: String,
-    default: "",
+    default: process.env.GOOGLE_DRIVE_USER_IMAGE_LOGO_ID,
   },
   localitate: {
     type: String,
-    default: "",
+    default: '',
   },
 
   oras: {
     type: String,
-    default: "",
+    default: '',
   },
 
   domiciliuFiles: [{ type: String }],
@@ -56,6 +60,6 @@ const userSchema = new Schema({
   resetPasswordToken: String,
 });
 
-const User = model("User", userSchema);
+const User = model('User', userSchema);
 
 module.exports = User;
