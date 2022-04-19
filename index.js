@@ -3,8 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
-const fileupload = require('express-fileupload');
 const app = express();
+const fileupload = require('express-fileupload');
+const server = require('http').Server(app);
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const fileRouter = require('./routes/files');
@@ -32,18 +33,21 @@ const connection = mongoose.connection;
 connection.once('open', () => {
   console.log('Mongo DB connect success');
 });
+// server.listen(8000, () => {
+//   console.log('listening on *:8080');
+// });
 
 app.use('/api/auth', authRouter);
 app.use('/api/post', postRouter);
 app.use('/api/files', fileRouter);
 app.use('/api/message', messageRoute);
 
-startWebSocketServer();
+startWebSocketServer(server);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));
 }
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
 });
