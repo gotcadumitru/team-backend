@@ -15,8 +15,10 @@ const getUsers = (userId) => {
 };
 
 const startWebSocketServer = (server) => {
-  const ws = io(server, cors, {
-    origin: 'https://localhost:3000/',
+  const ws = io(server, {
+    cors: {
+      origin: '*',
+    },
   });
   ws.on('connection', (socket) => {
     console.log('a user connected.');
