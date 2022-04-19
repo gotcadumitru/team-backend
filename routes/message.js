@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const Message = require('../models/message.model');
 const User = require('../models/user.model');
-const { getMessageFullType, getMessageSmallType } = require('../utils/message');
+const { getMessageFullType, getUsersFromMessages } = require('../utils/message');
 const checkToken = require('./verifyToken');
 
 //add
@@ -25,11 +25,12 @@ router.get('/all/:userId', checkToken, async (req, res) => {
   try {
     const user = await User.findById(userId);
     const messages = await Message.find({ $or: [{ receiverId: user._id }, { senderId: user._id }] });
-
-    const messagesWithUserData = await Promise.all(messages.map(getMessageSmallType));
+    const users = await getUsersFromMessages(messages);
+    const messagesWithUserData = await Promise.all(messages.map(async (message) => getMessageFullType(message, users)));
 
     res.status(200).json({ messages: messagesWithUserData });
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 });
@@ -41,7 +42,8 @@ router.get('/chats/:oras/:localitate', async (req, res) => {
     await Promise.all(
       users.map(async (user) => {
         const messages = await Message.find({ $or: [{ receiverId: user._id }, { senderId: user._id }] });
-        const messagesFullInfo = await Promise.all(messages.map(getMessageSmallType));
+        const users = await getUsersFromMessages(messages);
+        const messagesFullInfo = await Promise.all(messages.map(async (message) => getMessageFullType(message, users)));
         return (user.messages = messagesFullInfo);
       }),
     );
