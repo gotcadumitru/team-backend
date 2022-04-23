@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const postSchema = Schema(
   {
@@ -9,70 +9,68 @@ const postSchema = Schema(
       type: String,
     },
     author: {
-      type: String,
+      type: Object,
     },
     location: {
-      lat: {
-        type: String
+      longitude: {
+        type: Number,
       },
 
-      long: {
-        type: String
-      }
-
+      latitude: {
+        type: Number,
+      },
     },
     likes: [
       {
-        type: String
-      }
+        type: String,
+      },
     ],
 
     disLikes: [
       {
-        type: String
-      }
+        type: String,
+      },
     ],
 
     category: {
-      type: Number
+      type: String,
     },
     tags: [
       {
-        type: String
-      }
+        type: String,
+      },
     ],
     reportId: {
-      type: String
+      type: String,
     },
 
     comments: [
       {
-        type: String
-      }
+        type: String,
+      },
     ],
     labelLocation: {
-      type: String
+      type: String,
     },
 
     importanceLevel: {
-      type: Number,
+      type: String,
     },
     priority: {
-      type: Number
+      type: String,
     },
 
     files: [
       {
-        type: String
-      }
+        type: String,
+      },
     ],
-
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-const Post = model('Post', postSchema);
+const Post = model("Post", postSchema);
 
 module.exports = Post;
