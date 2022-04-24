@@ -6,6 +6,7 @@ const CATEGORIES_TYPES = require("../defaults/categories");
 const IMPORTANCE_LEVEL = require("../defaults/importance-level");
 const PRIORITY_LEVEL = require("../defaults/priority-level");
 const router = require("express").Router();
+const { getUserFullType } = require("../utils/user");
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -24,11 +25,13 @@ router.post("/", checkToken, async (req, res) => {
       priority = null,
       files = [],
     } = req.body;
-    console.log(req.body);
+
+    const userFullType = await getUserFullType(req.user);
+
     const newPost = new Post({
       title,
       description,
-      author: req.user,
+      author: userFullType,
       location,
       likes,
       disLikes,
