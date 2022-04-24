@@ -33,10 +33,6 @@ const connection = mongoose.connection;
 connection.once('open', () => {
   console.log('Mongo DB connect success');
 });
-// server.listen(8000, () => {
-//   console.log('listening on *:8080');
-// });
-
 app.use('/api/auth', authRouter);
 app.use('/api/post', postRouter);
 app.use('/api/files', fileRouter);
