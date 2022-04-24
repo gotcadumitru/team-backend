@@ -1,26 +1,26 @@
-const Post = require("../models/post.model");
-const File = require("../models/file.model");
-const Comment = require("../models/comment.model");
-const checkToken = require("./verifyToken");
-const CATEGORIES_TYPES = require("../defaults/categories");
-const IMPORTANCE_LEVEL = require("../defaults/importance-level");
-const PRIORITY_LEVEL = require("../defaults/priority-level");
-const router = require("express").Router();
-const { getUserFullType } = require("../utils/user");
+const Post = require('../models/post.model');
+const File = require('../models/file.model');
+const Comment = require('../models/comment.model');
+const checkToken = require('./verifyToken');
+const CATEGORIES_TYPES = require('../defaults/categories');
+const IMPORTANCE_LEVEL = require('../defaults/importance-level');
+const PRIORITY_LEVEL = require('../defaults/priority-level');
+const router = require('express').Router();
+const { getUserFullType } = require('../utils/user');
 
-router.post("/", checkToken, async (req, res) => {
+router.post('/', checkToken, async (req, res) => {
   try {
     const {
-      title = "",
-      description = "",
-      location = "",
+      title = '',
+      description = '',
+      location = '',
       likes = [],
       disLikes = [],
       category = null,
       tags = [],
-      reportId = "",
+      reportId = '',
       comments = [],
-      labelLocation = "",
+      labelLocation = '',
       importanceLevel = null,
       priority = null,
       files = [],
@@ -52,13 +52,13 @@ router.post("/", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
 });
 
-router.put("/:id", checkToken, async (req, res) => {
+router.put('/:id', checkToken, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -98,13 +98,13 @@ router.put("/:id", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
 });
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     let posts = await Post.find();
     posts = await Promise.all(
@@ -116,7 +116,7 @@ router.get("/", async (req, res) => {
           ...post._doc,
           files,
         };
-      })
+      }),
     );
     posts = await Promise.all(
       posts.map(async (post) => {
@@ -127,7 +127,7 @@ router.get("/", async (req, res) => {
           ...post,
           comments,
         };
-      })
+      }),
     );
 
     return res.status(200).send({
@@ -136,12 +136,12 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
 });
-router.get("/categories", async (req, res) => {
+router.get('/categories', async (req, res) => {
   try {
     return res.status(200).send({
       categories: CATEGORIES_TYPES,
@@ -149,12 +149,12 @@ router.get("/categories", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
 });
-router.get("/importance", async (req, res) => {
+router.get('/importance', async (req, res) => {
   try {
     return res.status(200).send({
       importance: IMPORTANCE_LEVEL,
@@ -162,25 +162,25 @@ router.get("/importance", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
 });
-router.get("/priority", async (req, res) => {
+router.get('/priority', async (req, res) => {
   try {
     return res.status(200).send({
-      importance: PRIORITY_LEVEL,
+      priority: PRIORITY_LEVEL,
       succes: true,
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
 });
-router.get("/:id", async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const post = await Post.findById(id);
@@ -196,7 +196,7 @@ router.get("/:id", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: 'Something went wrong',
       succes: false,
     });
   }
