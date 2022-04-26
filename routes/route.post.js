@@ -7,6 +7,7 @@ const IMPORTANCE_LEVEL = require("../defaults/default.importance-level");
 const PRIORITY_LEVEL = require("../defaults/default.priority-level");
 const router = require("express").Router();
 const { getUserFullType } = require("../utils/utils.user");
+const { getPostFullType } = require("../utils/utils.post");
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -27,12 +28,10 @@ router.post("/", checkToken, async (req, res) => {
       favorites = [],
     } = req.body;
 
-    const userFullType = await getUserFullType(req.user);
-
     const newPost = new Post({
       title,
       description,
-      author: userFullType,
+      author: req.user._id,
       location,
       likes,
       disLikes,
@@ -112,28 +111,8 @@ router.get("/", async (req, res) => {
   try {
     let posts = await Post.find();
     posts = await Promise.all(
-      posts.map(async (post) => {
-        const files = await File.find({
-          idFromDrive: { $in: post.files },
-        });
-        return {
-          ...post._doc,
-          files,
-        };
-      })
+      posts.map(async (post) => await getPostFullType(post._doc))
     );
-    posts = await Promise.all(
-      posts.map(async (post) => {
-        const comments = await Comment.find({
-          idFromDrive: { $in: post.comments },
-        });
-        return {
-          ...post,
-          comments,
-        };
-      })
-    );
-
     return res.status(200).send({
       posts,
       succes: true,
@@ -188,35 +167,9 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const post = await Post.findById(id);
-    const files = await File.find({
-      idFromDrive: { $in: post.files },
-    });
+    const postFullData = await getPostFullType(post._doc)
     return res.status(200).send({
-      post: {
-        ...post._doc,
-        files: files,
-      },
-      succes: true,
-    });
-  } catch (error) {
-    res.status(400).send({
-      message: "Something went wrong",
-      succes: false,
-    });
-  }
-});
-router.get("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const post = await Post.findById(id);
-    const files = await File.find({
-      idFromDrive: { $in: post.files },
-    });
-    return res.status(200).send({
-      post: {
-        ...post._doc,
-        files: files,
-      },
+      post: postFullData,
       succes: true,
     });
   } catch (error) {

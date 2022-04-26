@@ -9,7 +9,7 @@ const postSchema = Schema(
       type: String,
     },
     author: {
-      type: Object,
+      type: String,
     },
     location: {
       longitude: {
