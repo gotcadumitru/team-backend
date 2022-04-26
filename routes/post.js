@@ -77,6 +77,7 @@ router.put("/:id", checkToken, async (req, res) => {
       importanceLevel,
       priority,
       files,
+      favorites,
     } = req.body;
     const post = await Post.findById(id);
     post.title = title ?? post.title;
@@ -84,6 +85,7 @@ router.put("/:id", checkToken, async (req, res) => {
     post.location = location ?? post.location;
     post.likes = likes ?? post.likes;
     post.disLikes = disLikes ?? post.disLikes;
+    post.favorites = favorites ?? post.favorites;
     post.category = category ?? post.category;
     post.tags = tags ?? post.tags;
     post.reportId = reportId ?? post.reportId;
