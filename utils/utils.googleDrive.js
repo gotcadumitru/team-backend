@@ -1,5 +1,5 @@
 const { google } = require('googleapis');
-const bytesToSize = require('./bytesToMb');
+const bytesToSize = require('./utils.bytesToMb');
 const { Readable } = require('stream');
 const KEY_FILE_PATH = 'googleservice.json';
 

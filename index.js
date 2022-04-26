@@ -6,10 +6,10 @@ const path = require('path');
 const app = express();
 const fileupload = require('express-fileupload');
 const server = require('http').Server(app);
-const authRouter = require('./routes/auth');
-const postRouter = require('./routes/post');
-const fileRouter = require('./routes/files');
-const messageRoute = require('./routes/message');
+const authRouter = require('./routes/route.auth');
+const postRouter = require('./routes/route.post');
+const fileRouter = require('./routes/route.files');
+const messageRoute = require('./routes/route.message');
 
 const startWebSocketServer = require('./socket/wbsocket');
 

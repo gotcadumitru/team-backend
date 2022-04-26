@@ -1,12 +1,12 @@
-const Post = require("../models/post.model");
-const File = require("../models/file.model");
-const Comment = require("../models/comment.model");
+const Post = require("../models/model.post");
+const File = require("../models/model.file");
+const Comment = require("../models/model.comment");
 const checkToken = require("./verifyToken");
-const CATEGORIES_TYPES = require("../defaults/categories");
-const IMPORTANCE_LEVEL = require("../defaults/importance-level");
-const PRIORITY_LEVEL = require("../defaults/priority-level");
+const CATEGORIES_TYPES = require("../defaults/default.categories");
+const IMPORTANCE_LEVEL = require("../defaults/default.importance-level");
+const PRIORITY_LEVEL = require("../defaults/default.priority-level");
 const router = require("express").Router();
-const { getUserFullType } = require("../utils/user");
+const { getUserFullType } = require("../utils/utils.user");
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -175,6 +175,27 @@ router.get("/priority", async (req, res) => {
   try {
     return res.status(200).send({
       priority: PRIORITY_LEVEL,
+      succes: true,
+    });
+  } catch (error) {
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await Post.findById(id);
+    const files = await File.find({
+      idFromDrive: { $in: post.files },
+    });
+    return res.status(200).send({
+      post: {
+        ...post._doc,
+        files: files,
+      },
       succes: true,
     });
   } catch (error) {

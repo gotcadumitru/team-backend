@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
-const AccountRole = require('../defaults/account-role');
-const AccountStatus = require('../defaults/account-status');
+const AccountRole = require('../defaults/default.account-role');
+const AccountStatus = require('../defaults/default.account-status');
 
 const userSchema = new Schema({
   name: {

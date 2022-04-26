@@ -51,7 +51,7 @@ const postSchema = Schema(
 
     comments: [
       {
-        type: String,
+        type: Object,
       },
     ],
     labelLocation: {
