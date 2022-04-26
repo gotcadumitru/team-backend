@@ -20,6 +20,11 @@ const postSchema = Schema(
         type: Number,
       },
     },
+    favorites: [
+      {
+        type: String,
+      },
+    ],
     likes: [
       {
         type: String,
