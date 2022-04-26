@@ -1,4 +1,4 @@
-const File = require('../models/file.model');
+const File = require('../models/model.file');
 
 const getUserFullType = async (user) => {
   const domiciliuFiles = await File.find({

@@ -1,10 +1,10 @@
 const checkToken = require("./verifyToken");
-const File = require("../models/file.model");
+const File = require("../models/model.file");
 const router = require("express").Router();
 const {
   createAndUploadFile,
   deleteFileFromGoogleDriveByFileId,
-} = require("../utils/googleDrive");
+} = require("../utils/utils.googleDrive");
 
 router.post("/upload", async (req, res) => {
   try {

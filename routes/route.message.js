@@ -1,7 +1,7 @@
 const router = require('express').Router();
-const Message = require('../models/message.model');
-const User = require('../models/user.model');
-const { getMessageFullType, getUsersFromMessages } = require('../utils/message');
+const Message = require('../models/model.message');
+const User = require('../models/model.user');
+const { getMessageFullType, getUsersFromMessages } = require('../utils/utils.message');
 const checkToken = require('./verifyToken');
 
 //add

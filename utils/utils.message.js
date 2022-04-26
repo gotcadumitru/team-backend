@@ -1,6 +1,6 @@
 const { isValidObjectId } = require('mongoose');
-const User = require('../models/user.model');
-const { getUserFullType, getUserSmallType } = require('./user');
+const User = require('../models/model.user');
+const { getUserFullType, getUserSmallType } = require('./utils.user');
 
 const getMessageFullType = async (message, users = {}) => {
   let messageFullType = {
@@ -39,9 +39,6 @@ const getMessageFullType = async (message, users = {}) => {
   }
   return messageFullType;
 };
-const checkIsUserMessage = (moderatorId, currentUserIdForSocket, message) => {
-  return moderatorId ? message.moderator : currentUserIdForSocket === message.sender?._id;
-};
 
 const getUsersFromMessages = async (messages) => {
   const usersId = [
@@ -63,8 +60,5 @@ const getUsersFromMessages = async (messages) => {
   );
   return users;
 };
-const getUserSocketIdForModerator = (authUser) => {
-  return `${authUser.oras}/${authUser.localitate}`;
-};
 
-module.exports = { getMessageFullType, checkIsUserMessage, getUserSocketIdForModerator, getUsersFromMessages };
+module.exports = { getMessageFullType, getUsersFromMessages };

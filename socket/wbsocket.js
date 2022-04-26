@@ -1,4 +1,4 @@
-const Message = require('../models/message.model');
+const Message = require('../models/model.message');
 const io = require('socket.io');
 let users = [];
 
