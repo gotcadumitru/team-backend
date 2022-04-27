@@ -12,8 +12,10 @@ const getPostFullType = async (post, users = {}) => {
     if (users[post.author]) {
         postFullType.author = users[post.author];
     } else {
+
         postFullType.author = await getUserSmallType(await User.findById(post.author));
     }
+
     return postFullType
 };
 

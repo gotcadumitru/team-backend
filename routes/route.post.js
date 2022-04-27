@@ -6,8 +6,9 @@ const CATEGORIES_TYPES = require("../defaults/default.categories");
 const IMPORTANCE_LEVEL = require("../defaults/default.importance-level");
 const PRIORITY_LEVEL = require("../defaults/default.priority-level");
 const router = require("express").Router();
-const { getUserFullType } = require("../utils/utils.user");
+const { getUserSmallType } = require("../utils/utils.user");
 const { getPostFullType } = require("../utils/utils.post");
+const { v4: uuidv4 } = require('uuid');
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -118,6 +119,7 @@ router.get("/", async (req, res) => {
       succes: true,
     });
   } catch (error) {
+    console.log(error)
     res.status(400).send({
       message: "Something went wrong",
       succes: false,
@@ -173,6 +175,46 @@ router.get("/:id", async (req, res) => {
       succes: true,
     });
   } catch (error) {
+    console.log(error)
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
+router.post("/comment", checkToken, async (req, res) => {
+  try {
+    const { commentId, postId, text } = req.body
+    const user = req.user
+    const post = await Post.findById(postId);
+    const userSmallType = await getUserSmallType(user)
+    const newComment = {
+      _id: uuidv4(),
+      text,
+      author: userSmallType,
+      comments: [],
+      createdAt: new Date().toISOString()
+    }
+    if (commentId === postId) {
+      post.comments = [...post.comments, newComment]
+    } else {
+      const addComment = (comment) => {
+        if (comment._id === commentId) {
+          comment.comments = [...comment.comments, newComment]
+        } else {
+          comment.comments.map(c => addComment(c))
+        }
+      }
+      post.comments.map(addComment)
+    }
+    const posts = await Post.findByIdAndUpdate({ _id: post._id }, { $set: { comments: post.comments } })
+    const postFulllData = await getPostFullType(await Post.findById(post._id))
+    return res.status(200).send({
+      post: postFulllData,
+      succes: true,
+    });
+  } catch (error) {
+    console.log(error)
     res.status(400).send({
       message: "Something went wrong",
       succes: false,
