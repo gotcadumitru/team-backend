@@ -196,18 +196,18 @@ router.post("/comment", checkToken, async (req, res) => {
       createdAt: new Date().toISOString()
     }
     if (commentId === postId) {
-      post.comments = [...post.comments, newComment]
+      post.comments = [newComment, ...post.comments]
     } else {
       const addComment = (comment) => {
         if (comment._id === commentId) {
-          comment.comments = [...comment.comments, newComment]
+          comment.comments = [newComment, ...comment.comments]
         } else {
           comment.comments.map(c => addComment(c))
         }
       }
       post.comments.map(addComment)
     }
-    const posts = await Post.findByIdAndUpdate({ _id: post._id }, { $set: { comments: post.comments } })
+    await Post.findByIdAndUpdate({ _id: post._id }, { $set: { comments: post.comments } })
     const postFulllData = await getPostFullType(await Post.findById(post._id))
     return res.status(200).send({
       post: postFulllData,
