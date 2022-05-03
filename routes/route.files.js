@@ -1,47 +1,46 @@
 const checkToken = require("./verifyToken");
-const File = require("../models/model.file");
+// const File = require("../models/model.file");
+const multer = require('multer')
+const upload = multer({
+  storage: multer.memoryStorage()
+})
+
 const router = require("express").Router();
 const {
-  createAndUploadFile,
-  deleteFileFromGoogleDriveByFileId,
+  bucket
 } = require("../utils/utils.googleDrive");
-const sharp = require('sharp')
-router.post("/upload", async (req, res) => {
+
+
+
+
+router.post("/upload", upload.any('files'), async (req, res) => {
   try {
-    let files = req.files?.files ?? [];
-    if (!Array.isArray(files)) {
-      files = [files];
+    if (!req.files) {
+      res.status(400).send("Error: No files found")
+    } else {
+      req.files.map(async (file) => {
+
+        const blob = bucket.file(file.originalname)
+
+        const blobWriter = blob.createWriteStream({
+          metadata: {
+            contentType: file.mimetype
+          }
+        })
+
+        blobWriter.on('error', (err) => {
+          console.log(err)
+        })
+
+        blobWriter.on('finish', async () => {
+          const url = await blob.getSignedUrl()
+          console.log(url)
+          res.status(200).send("File uploaded.")
+        })
+
+        blobWriter.end(file.buffer)
+      })
     }
-
-    const uploadedFiles = await Promise.all(
-      files.map(async (file) => {
-        const { fileUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file);
-        let fileResized = null
-        let imageLowQuality = null
-        if (["image/jpeg", "image/png", 'application/octet-stream'].includes(file.mimetype)) {
-          fileResized = await sharp(file.data).resize({ width: 200, }).toBuffer()
-          imageLowQuality = await createAndUploadFile({ name: file.name, mimetype: file.mimetype, data: fileResized });
-        }
-        const newFileData = {
-          mimetype: file.mimetype,
-          name: file.name,
-          fileUrl,
-          idFromDrive,
-          size,
-          downloadLink,
-          lowQualityUrl: imageLowQuality?.fileUrl || fileUrl,
-        };
-
-        const newFile = new File(newFileData);
-        await newFile.save();
-        return newFileData;
-      })
-    );
-
-    res.status(200).json({
-      succes: true,
-      files: uploadedFiles,
-    });
   } catch (err) {
     console.log(err);
     return res.status(400).json({
@@ -51,28 +50,28 @@ router.post("/upload", async (req, res) => {
   }
 });
 
-router.post("/delete", checkToken, async (req, res) => {
-  try {
-    let { filesIdFromDrive } = req.data;
+// router.post("/delete", checkToken, async (req, res) => {
+//   try {
+//     let { filesIdFromDrive } = req.data;
 
-    await Promise.all(
-      filesIdFromDrive.map(async (fileIdFromDrive) => {
-        return await deleteFileFromGoogleDriveByFileId(
-          fileIdFromDrive
-        );
-      })
-    );
+//     await Promise.all(
+//       filesIdFromDrive.map(async (fileIdFromDrive) => {
+//         return await deleteFileFromGoogleDriveByFileId(
+//           fileIdFromDrive
+//         );
+//       })
+//     );
 
-    res.status(200).json({
-      succes: true,
-      links: files,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: "Something went wrong, hz ce",
-    });
-  }
-});
+//     res.status(200).json({
+//       succes: true,
+//       links: files,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(400).json({
+//       succes: false,
+//       message: "Something went wrong, hz ce",
+//     });
+//   }
+// });
 module.exports = router;
