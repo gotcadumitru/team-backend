@@ -1,47 +1,33 @@
-const checkToken = require("./verifyToken");
+const multer = require("multer");
 const File = require("../models/model.file");
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
+const { v4: uuidv4 } = require('uuid');
+
 const router = require("express").Router();
-const {
-  createAndUploadFile,
-  deleteFileFromGoogleDriveByFileId,
-} = require("../utils/utils.googleDrive");
-const sharp = require('sharp')
-router.post("/upload", async (req, res) => {
+const { bucket } = require("../utils/utils.googleDrive");
+const bytesToSize = require("../utils/utils.bytesToMb");
+
+router.post("/upload", upload.any("files"), async (req, res) => {
   try {
-    let files = req.files?.files ?? [];
-    if (!Array.isArray(files)) {
-      files = [files];
+    if (!req.files) {
+      res.status(400).send("Error: No files found");
+    } else {
+      let files = []
+      await Promise.all(
+
+        req.files.map(async (file) => {
+          const uploadedFile = await getFile(file)
+          return files.push(uploadedFile);
+
+        })
+      )
+      res.status(200).json({
+        succes: true,
+        files,
+      });
     }
-
-    const uploadedFiles = await Promise.all(
-      files.map(async (file) => {
-        const { fileUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file);
-        let fileResized = null
-        let imageLowQuality = null
-        if (["image/jpeg", "image/png", 'application/octet-stream'].includes(file.mimetype)) {
-          fileResized = await sharp(file.data).resize({ width: 200, }).toBuffer()
-          imageLowQuality = await createAndUploadFile({ name: file.name, mimetype: file.mimetype, data: fileResized });
-        }
-        const newFileData = {
-          mimetype: file.mimetype,
-          name: file.name,
-          fileUrl,
-          idFromDrive,
-          size,
-          downloadLink,
-          lowQualityUrl: imageLowQuality?.fileUrl || fileUrl,
-        };
-
-        const newFile = new File(newFileData);
-        await newFile.save();
-        return newFileData;
-      })
-    );
-
-    res.status(200).json({
-      succes: true,
-      files: uploadedFiles,
-    });
   } catch (err) {
     console.log(err);
     return res.status(400).json({
@@ -51,28 +37,71 @@ router.post("/upload", async (req, res) => {
   }
 });
 
-router.post("/delete", checkToken, async (req, res) => {
-  try {
-    let { filesIdFromDrive } = req.data;
+const getFile = async (file) => {
 
-    await Promise.all(
-      filesIdFromDrive.map(async (fileIdFromDrive) => {
-        return await deleteFileFromGoogleDriveByFileId(
-          fileIdFromDrive
-        );
-      })
-    );
+  return new Promise((resolve, reject) => {
+    const id = uuidv4();
+    const name = file.originalname.replace(/\s/g, '')
+    const blob = bucket.file(id + name);
 
-    res.status(200).json({
-      succes: true,
-      links: files,
+    const blobWriter = blob.createWriteStream({
+      metadata: {
+        contentType: file.mimetype,
+      },
+      predefinedAcl: "publicRead",
     });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({
-      succes: false,
-      message: "Something went wrong, hz ce",
+
+    blobWriter.on("error", (err) => {
+      console.log(err);
+      reject(err)
     });
-  }
-});
+
+    blobWriter.on("finish", async () => {
+      const signedUrls = await blob
+        .getSignedUrl({
+          action: "read",
+          expires: "03-09-2491",
+        })
+
+      const newFileData = {
+        mimetype: file.mimetype,
+        name,
+        fileUrl: signedUrls[0],
+        idFromDrive: id,
+        size: bytesToSize(file.size),
+        downloadLink: signedUrls[0],
+      };
+
+      const newFile = new File(newFileData);
+      await newFile.save();
+      resolve(newFile)
+    });
+    blobWriter.end(file.buffer);
+  })
+}
+
+// router.post("/delete", checkToken, async (req, res) => {
+//   try {
+//     let { filesIdFromDrive } = req.data;
+
+//     await Promise.all(
+//       filesIdFromDrive.map(async (fileIdFromDrive) => {
+//         return await deleteFileFromGoogleDriveByFileId(
+//           fileIdFromDrive
+//         );
+//       })
+//     );
+
+//     res.status(200).json({
+//       succes: true,
+//       links: files,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(400).json({
+//       succes: false,
+//       message: "Something went wrong, hz ce",
+//     });
+//   }
+// });
 module.exports = router;
