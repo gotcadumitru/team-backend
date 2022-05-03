@@ -5,7 +5,7 @@ const {
   createAndUploadFile,
   deleteFileFromGoogleDriveByFileId,
 } = require("../utils/utils.googleDrive");
-
+const sharp = require('sharp')
 router.post("/upload", async (req, res) => {
   try {
     let files = req.files?.files ?? [];
@@ -15,8 +15,13 @@ router.post("/upload", async (req, res) => {
 
     const uploadedFiles = await Promise.all(
       files.map(async (file) => {
-        const { fileUrl, idFromDrive, size, downloadLink } =
-          await createAndUploadFile(file);
+        const { fileUrl, idFromDrive, size, downloadLink } = await createAndUploadFile(file);
+        let fileResized = null
+        let imageLowQuality = null
+        if (["image/jpeg", "image/png", 'application/octet-stream'].includes(file.mimetype)) {
+          fileResized = await sharp(file.data).resize({ width: 200, }).toBuffer()
+          imageLowQuality = await createAndUploadFile({ name: file.name, mimetype: file.mimetype, data: fileResized });
+        }
         const newFileData = {
           mimetype: file.mimetype,
           name: file.name,
@@ -24,6 +29,7 @@ router.post("/upload", async (req, res) => {
           idFromDrive,
           size,
           downloadLink,
+          lowQualityUrl: imageLowQuality?.fileUrl || fileUrl,
         };
 
         const newFile = new File(newFileData);

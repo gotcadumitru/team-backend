@@ -1,6 +1,4 @@
 const Post = require("../models/model.post");
-const File = require("../models/model.file");
-const Comment = require("../models/model.comment");
 const checkToken = require("./verifyToken");
 const CATEGORIES_TYPES = require("../defaults/default.categories");
 const IMPORTANCE_LEVEL = require("../defaults/default.importance-level");
@@ -9,6 +7,7 @@ const router = require("express").Router();
 const { getUserSmallType } = require("../utils/utils.user");
 const { getPostFullType } = require("../utils/utils.post");
 const { v4: uuidv4 } = require('uuid');
+const { POST_STATUS, POST_STATUS_ARRAY } = require("../defaults/default.post-status");
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -21,6 +20,7 @@ router.post("/", checkToken, async (req, res) => {
       category = null,
       tags = [],
       reportId = "",
+      status = POST_STATUS.NOU,
       comments = [],
       labelLocation = "",
       importanceLevel = null,
@@ -37,6 +37,7 @@ router.post("/", checkToken, async (req, res) => {
       likes,
       disLikes,
       category,
+      status,
       tags,
       reportId,
       comments,
@@ -72,6 +73,7 @@ router.put("/:id", checkToken, async (req, res) => {
       category,
       tags,
       reportId,
+      status,
       comments,
       labelLocation,
       importanceLevel,
@@ -87,6 +89,7 @@ router.put("/:id", checkToken, async (req, res) => {
     post.disLikes = disLikes ?? post.disLikes;
     post.favorites = favorites ?? post.favorites;
     post.category = category ?? post.category;
+    post.status = status ?? post.status;
     post.tags = tags ?? post.tags;
     post.reportId = reportId ?? post.reportId;
     post.comments = comments ?? post.comments;
@@ -152,6 +155,19 @@ router.get("/importance", async (req, res) => {
     });
   }
 });
+router.get("/status", async (req, res) => {
+  try {
+    return res.status(200).send({
+      status: POST_STATUS_ARRAY,
+      succes: true,
+    });
+  } catch (error) {
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
 router.get("/priority", async (req, res) => {
   try {
     return res.status(200).send({
@@ -208,7 +224,8 @@ router.post("/comment", checkToken, async (req, res) => {
       post.comments.map(addComment)
     }
     await Post.findByIdAndUpdate({ _id: post._id }, { $set: { comments: post.comments } })
-    const postFulllData = await getPostFullType(await Post.findById(post._id))
+    const postFromBe = await Post.findById(post._id)
+    const postFulllData = await getPostFullType(postFromBe._doc)
     return res.status(200).send({
       post: postFulllData,
       succes: true,

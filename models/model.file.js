@@ -8,6 +8,7 @@ const FileSchema = new Schema(
     fileUrl: { type: String, required: true },
     downloadLink: { type: String, required: true },
     size: { type: Number, required: true },
+    lowQualityUrl: { type: String, required: true },
   },
   {
     timestamps: true,
