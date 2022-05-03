@@ -1,45 +1,31 @@
-const checkToken = require("./verifyToken");
-// const File = require("../models/model.file");
 const multer = require("multer");
+const File = require("../models/model.file");
 const upload = multer({
   storage: multer.memoryStorage(),
 });
+const { v4: uuidv4 } = require('uuid');
 
 const router = require("express").Router();
 const { bucket } = require("../utils/utils.googleDrive");
+const bytesToSize = require("../utils/utils.bytesToMb");
 
 router.post("/upload", upload.any("files"), async (req, res) => {
   try {
     if (!req.files) {
       res.status(400).send("Error: No files found");
     } else {
-      req.files.map(async (file) => {
-        const blob = bucket.file(file.originalname);
+      let files = []
+      await Promise.all(
 
-        const blobWriter = blob.createWriteStream({
-          metadata: {
-            contentType: file.mimetype,
-          },
-          predefinedAcl: "publicRead",
-        });
+        req.files.map(async (file) => {
+          const uploadedFile = await getFile(file)
+          return files.push(uploadedFile);
 
-        blobWriter.on("error", (err) => {
-          console.log(err);
-        });
-
-        blobWriter.on("finish", () => {
-          blob
-            .getSignedUrl({
-              action: "read",
-              expires: "03-09-2491",
-            })
-            .then((signedUrls) => {
-              console.log(signedUrls[0]);
-            });
-          res.status(200).send("File uploaded.");
-        });
-
-        blobWriter.end(file.buffer);
+        })
+      )
+      res.status(200).json({
+        succes: true,
+        files,
       });
     }
   } catch (err) {
@@ -50,6 +36,49 @@ router.post("/upload", upload.any("files"), async (req, res) => {
     });
   }
 });
+
+const getFile = async (file) => {
+
+  return new Promise((resolve, reject) => {
+    const id = uuidv4();
+    const name = file.originalname.replace(/\s/g, '')
+    const blob = bucket.file(id + name);
+
+    const blobWriter = blob.createWriteStream({
+      metadata: {
+        contentType: file.mimetype,
+      },
+      predefinedAcl: "publicRead",
+    });
+
+    blobWriter.on("error", (err) => {
+      console.log(err);
+      reject(err)
+    });
+
+    blobWriter.on("finish", async () => {
+      const signedUrls = await blob
+        .getSignedUrl({
+          action: "read",
+          expires: "03-09-2491",
+        })
+
+      const newFileData = {
+        mimetype: file.mimetype,
+        name,
+        fileUrl: signedUrls[0],
+        idFromDrive: id,
+        size: bytesToSize(file.size),
+        downloadLink: signedUrls[0],
+      };
+
+      const newFile = new File(newFileData);
+      await newFile.save();
+      resolve(newFile)
+    });
+    blobWriter.end(file.buffer);
+  })
+}
 
 // router.post("/delete", checkToken, async (req, res) => {
 //   try {
