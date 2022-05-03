@@ -11,6 +11,9 @@ const postSchema = Schema(
     author: {
       type: String,
     },
+    status: {
+      type: String,
+    },
     location: {
       longitude: {
         type: Number,
