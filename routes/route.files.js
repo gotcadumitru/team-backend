@@ -14,12 +14,11 @@ router.post("/upload", upload.any("files"), async (req, res) => {
     if (!req.files) {
       res.status(400).send("Error: No files found");
     } else {
-      let files = []
-      await Promise.all(
+      const files = await Promise.all(
 
         req.files.map(async (file) => {
           const uploadedFile = await getFile(file)
-          return files.push(uploadedFile);
+          return uploadedFile;
 
         })
       )
