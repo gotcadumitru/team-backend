@@ -111,6 +111,96 @@ router.put("/:id", checkToken, async (req, res) => {
   }
 });
 
+router.put("/like/:id", checkToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user
+    const post = await Post.findById(id);
+    post.likes.push(user._id);
+    post.likes = [...new Set(post.likes)]
+    post.disLikes = post.disLikes.filter(userId => userId !== user._id.toString());
+    await post.save();
+    const postFullData = await getPostFullType(post._doc)
+    return res.status(200).send({
+      post: postFullData,
+      succes: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
+router.put("/dislike/:id", checkToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user
+    const post = await Post.findById(id);
+    post.disLikes.push(user._id);
+    post.disLikes = [...new Set(post.disLikes)]
+    post.likes = post.likes.filter(userId => userId !== user._id.toString());
+    console.log(post.disLikes)
+    console.log(post.likes)
+    console.log(post.likes.filter(userId => userId !== user._id.toString()))
+    console.log(user._id)
+    await post.save();
+    const postFullData = await getPostFullType(post._doc)
+    return res.status(200).send({
+      post: postFullData,
+      succes: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
+router.put("/follow/:id", checkToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user
+    const post = await Post.findById(id);
+    post.favorites.push(user._id);
+    post.favorites = [...new Set(post.favorites)]
+    await post.save();
+    const postFullData = await getPostFullType(post._doc)
+    return res.status(200).send({
+      post: postFullData,
+      succes: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
+router.put("/unfollow/:id", checkToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user
+    const post = await Post.findById(id);
+    post.favorites = post.favorites.filter(userId => userId !== user._id.toString());
+    await post.save();
+    const postFullData = await getPostFullType(post._doc)
+    return res.status(200).send({
+      post: postFullData,
+      succes: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      message: "Something went wrong",
+      succes: false,
+    });
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     let posts = await Post.find();
