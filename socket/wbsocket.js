@@ -21,7 +21,6 @@ const startWebSocketServer = (server) => {
     },
   });
   ws.on('connection', (socket) => {
-    console.log('a user connected.');
 
     socket.on('addUser', (userId) => {
       addUser(userId, socket.id);
@@ -29,9 +28,9 @@ const startWebSocketServer = (server) => {
     });
 
     socket.on('sendMessage', async ({ senderId, receiverId, text, moderatorId }) => {
-      const users = getUsers(receiverId);
+      const recivers = getUsers(receiverId);
       const senderUser = getUsers(senderId);
-      [...senderUser, ...users].forEach((user) => {
+      [...senderUser, ...recivers].forEach((user) => {
         ws.to(user.socketId).emit('getMessage');
       });
 

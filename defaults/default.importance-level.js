@@ -1,19 +1,19 @@
 const IMPORTANCE_LEVEL = [
   {
     id: 0,
-    name: "local"
+    name: "Local"
   },
   {
     id: 1,
-    name: "regional"
+    name: "Regional"
   },
   {
     id: 2,
-    name: "national"
+    name: "Național"
   },
   {
     id: 3,
-    name: "international"
+    name: "International"
   },
 
 ]

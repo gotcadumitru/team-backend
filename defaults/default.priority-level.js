@@ -1,23 +1,23 @@
 const PRIORITY_LEVEL = [
   {
     id: 0,
-    name: "foarte important"
+    name: "Foarte important"
   },
   {
     id: 1,
-    name: "important"
+    name: "Important"
   },
   {
     id: 2,
-    name: "mediu"
+    name: "Mediu"
   },
   {
     id: 3,
-    name: "mai putin important"
+    name: "Mai puțin important"
   },
   {
     id: 4,
-    name: "nesemnificativ"
+    name: "Nesemnificativ"
   },
 
 
