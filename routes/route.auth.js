@@ -499,6 +499,7 @@ router.get('/users-administrator/:oras/:localitate', checkToken, async (req, res
           AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA,
           AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR,
           AccountRole.ADMINISTRATOR,
+          AccountRole.TOP_ADMINISTRATOR,
         ],
       },
     });
