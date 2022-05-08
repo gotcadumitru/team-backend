@@ -306,7 +306,7 @@ router.post('/forgotpassword', async (req, res) => {
     findUser.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     const savedUser = await findUser.save();
 
-    const resetUrl = `https://localhost:3000/auth/resetpassword/${resetToken}`;
+    const resetUrl = `${process.env.FRONT_END_ORIGIN}/auth/resetpassword/${resetToken}`;
 
     const message = `
         <h1>You have requested a new password reset</h1>
