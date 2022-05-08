@@ -49,6 +49,7 @@ const startWebSocketServer = (server) => {
       ws.emit('getUsers', users);
     });
   });
+  return ws
 };
 
 module.exports = startWebSocketServer;

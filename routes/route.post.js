@@ -200,7 +200,6 @@ router.put("/unfollow/:id", checkToken, async (req, res) => {
     });
   }
 });
-
 router.get("/", async (req, res) => {
   try {
     let posts = await Post.find();
