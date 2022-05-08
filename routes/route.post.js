@@ -7,7 +7,8 @@ const router = require("express").Router();
 const { getUserSmallType } = require("../utils/utils.user");
 const { getPostFullType } = require("../utils/utils.post");
 const { v4: uuidv4 } = require('uuid');
-const { POST_STATUS, POST_STATUS_ARRAY } = require("../defaults/default.post-status");
+const { POST_STATUS, POST_STATUS_ARRAY, POSTS_KANBANBOARD } = require("../defaults/default.post-status");
+const Kanbanboard = require("../models/model.kanbanboard");
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -47,7 +48,20 @@ router.post("/", checkToken, async (req, res) => {
       files,
       favorites,
     });
+
+
     await newPost.save();
+    let board = await Kanbanboard.findOne({ boardName: POSTS_KANBANBOARD })
+    board.columns = board.columns.map(column => {
+      if (column.title === status) {
+        return {
+          ...column._doc,
+          items: [...column.items.map(item => item), newPost._id]
+        }
+      }
+      return column._doc
+    })
+    await board.save()
     return res.status(200).send({
       post: newPost,
       succes: true,
