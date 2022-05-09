@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
   if (emailExist) {
     return res.status(400).json({
       succes: false,
-      message: 'Email already exist',
+      message: 'Acest email deja exista',
     });
   }
   //Hash password
@@ -66,12 +66,12 @@ router.post('/register', async (req, res) => {
       await findUser.save();
 
       res.status(400).json({
-        message: 'Email could not be send',
+        message: 'Nu e posibil de trimis email-ul',
       });
     }
     const token = jwt.sign({ _id: savedUser._id }, process.env.TOKEN_SECRET);
     res.json({
-      message: 'Please follow the steps in the email',
+      message: 'Te rog urmeaza pasii din email',
       token,
     });
   } catch (err) {
@@ -89,28 +89,28 @@ router.post('/login', async (req, res) => {
   if (!user) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid email or password',
+      message: 'Invalida adresa de email sau parola',
     });
   }
   const validPass = await bcrypt.compare(password, user.password);
   if (!validPass) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid email or password',
+      message: 'Invalida adresa de email sau parola',
     });
   }
 
   if (user.accountStatus === AccountStatus.BLOCKED) {
     return res.status(400).send({
       succes: false,
-      message: 'Your account is blocked',
+      message: 'Contul tau este blocat',
     });
   }
 
   if (user.accountStatus === AccountStatus.REJECTED) {
     return res.status(400).send({
       succes: false,
-      message: 'Unfortunately, the administrators decided not to confirm your account',
+      message: 'Din pacate confirmarea contului tau a fost anulata de administrator',
     });
   }
   //create and assign a token
@@ -140,14 +140,14 @@ router.post('/googlelogin', async (req, res) => {
           if (user.accountStatus === AccountStatus.BLOCKED) {
             return res.status(400).send({
               succes: false,
-              message: 'Your account is blocked',
+              message: 'Contul tau este blocat',
             });
           }
 
           if (user.accountStatus === AccountStatus.REJECTED) {
             return res.status(400).send({
               succes: false,
-              message: 'Unfortunately, the administrators decided not to confirm your account',
+              message: 'Din pacate confirmarea contului tau a fost anulata de administrator',
             });
           }
 
@@ -181,14 +181,14 @@ router.post('/googlelogin', async (req, res) => {
           } catch (err) {
             res.status(400).json({
               succes: false,
-              message: 'Somthing was wrong1',
+              message: 'Ceva nu a mers bine 1',
             });
           }
         }
       } catch (err) {
         res.status(400).json({
           succes: false,
-          message: 'Somthing was wrong2',
+          message: 'Ceva nu a mers bine 2',
         });
       }
     }
@@ -196,7 +196,7 @@ router.post('/googlelogin', async (req, res) => {
     console.log(err);
     res.status(400).json({
       succes: false,
-      message: 'Somthing was wrong3',
+      message: 'Ceva nu a mers bine 3',
     });
   }
 });
@@ -221,14 +221,14 @@ router.post('/facebooklogin', async (req, res) => {
             if (user.accountStatus === AccountStatus.BLOCKED) {
               return res.status(400).send({
                 succes: false,
-                message: 'Your account is blocked',
+                message: 'Contul tau este blocat',
               });
             }
 
             if (user.accountStatus === AccountStatus.REJECTED) {
               return res.status(400).send({
                 succes: false,
-                message: 'Unfortunately, the administrators decided not to confirm your account',
+                message: 'Din pacate confirmarea contului tau a fost anulata de administrator',
               });
             }
 
@@ -262,32 +262,32 @@ router.post('/facebooklogin', async (req, res) => {
             } catch (err) {
               res.status(400).json({
                 succes: false,
-                message: 'Somthing was wrong1',
+                message: 'Ceva nu a mers bine 1',
               });
             }
           }
         } catch (err) {
           res.status(400).json({
             succes: false,
-            message: 'Somthing was wrong2',
+            message: 'Ceva nu a mers bine 2',
           });
         }
       } else {
         res.status(400).json({
           succes: false,
-          message: 'Somthing was wrong3',
+          message: 'Ceva nu a mers bine 3',
         });
       }
     } catch (err) {
       res.status(400).json({
         succes: false,
-        message: 'Somthing was wrong4',
+        message: 'Ceva nu a mers bine 4',
       });
     }
   } catch (err) {
     res.status(400).json({
       succes: false,
-      message: 'Somthing was wrong5',
+      message: 'Ceva nu a mers bine 5',
     });
   }
 });
@@ -299,7 +299,7 @@ router.post('/forgotpassword', async (req, res) => {
     if (!findUser) {
       return res.status(404).json({
         succes: false,
-        message: 'Email could not be send',
+        message: 'Nu exista utilizator cu aceasta adresa de email',
       });
     }
     const resetToken = crypto.randomBytes(20).toString('hex');
@@ -316,12 +316,12 @@ router.post('/forgotpassword', async (req, res) => {
     try {
       await sendMail({
         to: savedUser.email,
-        subject: 'Password Reset',
+        subject: 'Resetare parola',
         text: message,
       });
       res.status(200).json({
         succes: true,
-        message: 'Email was send',
+        message: 'Email-ul a fost trimis',
       });
     } catch (err) {
       findUser.resetPasswordToken = undefined;
@@ -329,13 +329,13 @@ router.post('/forgotpassword', async (req, res) => {
 
       res.status(400).json({
         succes: false,
-        message: 'Email could not be send',
+        message: 'Email-ul nu a fost trimis',
       });
     }
   } catch (err) {
     res.status(400).json({
       succes: false,
-      message: 'Other Error',
+      message: 'A aparut o eroare la trimiterea email-ului',
     });
   }
 });
@@ -347,7 +347,7 @@ router.post('/resetpassword/:resetToken', async (req, res) => {
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid reset Token',
+        message: 'Invalid token pentru resetarea parolei',
       });
     }
     const salt = await bcrypt.genSalt(10);
@@ -358,12 +358,12 @@ router.post('/resetpassword/:resetToken', async (req, res) => {
     await findUser.save();
     return res.status(200).json({
       succes: true,
-      message: 'Password Reset Succes',
+      message: 'PArula a fost resetata cu succes',
     });
   } catch (error) {
     return res.status(400).json({
       succes: false,
-      message: 'error',
+      message: 'Eroare neprevazuta',
     });
   }
 });
@@ -376,7 +376,7 @@ router.post('/changepassword', checkToken, async (req, res) => {
   if (!validPass) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid password',
+      message: 'Parola invalida',
     });
   }
 
@@ -389,12 +389,12 @@ router.post('/changepassword', checkToken, async (req, res) => {
 
     return res.status(200).json({
       succes: true,
-      data: 'Password changed successfully',
+      data: 'Parola a fost modificata cu succes',
     });
   } catch (e) {
     return res.status(400).json({
       succes: false,
-      message: 'Error change password',
+      message: 'Eroara la schimbarea parolei',
     });
   }
 });
@@ -407,7 +407,7 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid Confirm Register Token',
+        message: 'Invalid token de inregistarare',
       });
     }
 
@@ -418,12 +418,12 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
     return res.status(200).json({
       succes: true,
       token: token,
-      message: 'Account succesful confirmed',
+      message: 'Contul a fost confirmat cu succes',
     });
   } catch (error) {
     return res.status(400).json({
       succes: false,
-      message: 'error',
+      message: 'Eroare neprevazuta la confirmarea contului',
     });
   }
 });
@@ -438,7 +438,7 @@ router.get('/me', checkToken, async (req, res) => {
   } else {
     return res.status(400).json({
       succes: false,
-      message: 'Acces denied',
+      message: 'Accessul nu este permis',
     });
   }
 });
@@ -461,7 +461,7 @@ router.get('/users-to-confirm/:oras/:localitate', checkToken, async (req, res) =
   } catch (err) {
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
@@ -482,7 +482,7 @@ router.get('/users-moderatori/:oras/:localitate', checkToken, async (req, res) =
   } catch (err) {
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
@@ -511,7 +511,7 @@ router.get('/users-administrator/:oras/:localitate', checkToken, async (req, res
   } catch (err) {
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
@@ -528,7 +528,7 @@ router.get('/users/:oras/:localitate', checkToken, async (req, res) => {
     console.log(err);
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
@@ -540,13 +540,13 @@ router.post('/change-user-status', checkToken, async (req, res) => {
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid user id',
+        message: 'Invalid id de utilizator',
       });
     }
     if (typeof isConfirmed != 'boolean') {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid status',
+        message: 'Statusul trimis este invalid',
       });
     }
     findUser.accountStatus = isConfirmed ? AccountStatus.CONFIRMED : AccountStatus.REJECTED;
@@ -554,13 +554,13 @@ router.post('/change-user-status', checkToken, async (req, res) => {
     const userWithFullInfo = await getUserFullType(findUser);
     res.status(200).json({
       succes: true,
-      message: 'User Status has been successfully modified',
+      message: 'Statusul utilizatorului a fost modificat cu succes',
       user: userWithFullInfo,
     });
   } catch (err) {
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
@@ -572,7 +572,7 @@ router.post('/edit-user', checkToken, async (req, res) => {
     if (!findUser) {
       return res.status(400).json({
         succes: false,
-        message: 'Invalid user id',
+        message: 'Invalid id de utilizator',
       });
     }
     if (role === AccountRole.ADMIN_JUDET_OR_LOCALITATE_OR_COMUNA_DREPT_PENTRU_MODERATOR) {
@@ -604,13 +604,13 @@ router.post('/edit-user', checkToken, async (req, res) => {
     const userWithFullInfo = await getUserFullType(findUser);
     res.status(200).json({
       succes: true,
-      message: 'User has been successfully modified',
+      message: 'Utilizatorul a fost modificat cu succes',
       user: userWithFullInfo,
     });
   } catch (err) {
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });

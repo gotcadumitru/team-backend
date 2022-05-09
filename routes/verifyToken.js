@@ -7,7 +7,7 @@ const checkToken = async (req, res, next) => {
     if (token == null)
       return res.status(400).send({
         succes: false,
-        message: 'Acces Denied',
+        message: 'Nu exista token Authorization header',
       });
 
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
@@ -19,7 +19,7 @@ const checkToken = async (req, res, next) => {
       } else {
         return res.status(404).send({
           succes: false,
-          message: 'Invalid Token',
+          message: 'Nu exista utilizator cu tokenul trimis',
         });
       }
     }
@@ -27,7 +27,7 @@ const checkToken = async (req, res, next) => {
   } catch (err) {
     return res.status(400).send({
       succes: false,
-      message: 'Invalid Token',
+      message: 'Token-ul trimis este invalid',
     });
   }
 };

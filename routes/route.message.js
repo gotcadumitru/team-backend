@@ -70,7 +70,7 @@ router.get('/chats/:oras/:localitate', async (req, res) => {
     console.log(err);
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
@@ -87,7 +87,7 @@ router.get('/new-messages/:reciverId', checkToken, async (req, res) => {
     console.log(err);
     return res.status(400).json({
       succes: false,
-      message: 'Something went wrong, hz ce',
+      message: 'Ceva nu a mers bine',
     });
   }
 });
