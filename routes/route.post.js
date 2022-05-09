@@ -69,7 +69,7 @@ router.post("/", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -119,7 +119,7 @@ router.put("/:id", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -142,7 +142,7 @@ router.put("/like/:id", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -168,7 +168,7 @@ router.put("/dislike/:id", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -189,7 +189,7 @@ router.put("/follow/:id", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -209,7 +209,7 @@ router.put("/unfollow/:id", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -227,7 +227,7 @@ router.get("/", async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -240,7 +240,7 @@ router.get("/categories", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -253,7 +253,7 @@ router.get("/importance", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -266,7 +266,7 @@ router.get("/status", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -279,7 +279,7 @@ router.get("/priority", async (req, res) => {
     });
   } catch (error) {
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -296,7 +296,7 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -336,7 +336,7 @@ router.post("/comment", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }

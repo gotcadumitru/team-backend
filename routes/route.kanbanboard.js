@@ -30,7 +30,7 @@ router.get("/board", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
@@ -50,7 +50,7 @@ router.put("/board", checkToken, async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).send({
-      message: "Something went wrong",
+      message: "Ceva nu a mers bine",
       succes: false,
     });
   }
