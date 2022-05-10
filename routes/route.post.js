@@ -96,6 +96,28 @@ router.put("/:id", checkToken, async (req, res) => {
       favorites,
     } = req.body;
     const post = await Post.findById(id);
+
+
+    let board = await Kanbanboard.findOne({ boardName: POSTS_KANBANBOARD })
+    board.columns = board.columns.map(column => {
+      if (column.title === status) {
+        return {
+          ...column._doc,
+          items: [...column.items.map(item => item), id]
+        }
+      }
+      if (column.title === post.status) {
+        return {
+          ...column._doc,
+          items: column.items.filter(item => item !== id)
+        }
+      }
+      return column._doc
+    })
+    await board.save()
+
+
+
     post.title = title ?? post.title;
     post.description = description ?? post.description;
     post.location = location ?? post.location;
@@ -112,6 +134,8 @@ router.put("/:id", checkToken, async (req, res) => {
     post.priority = priority ?? post.priority;
     post.files = files ?? post.files;
     await post.save();
+
+
     return res.status(200).send({
       post: post,
       succes: true,
