@@ -3,7 +3,7 @@ const admin = require('firebase-admin')
 // Initialize firebase admin SDK
 admin.initializeApp({
   credential: admin.credential.cert('googleservice.json'),
-  storageBucket: "gs://team-33e07.appspot.com/"
+  storageBucket: "gs://file-storage-8a30e.appspot.com/"
 })
 
 // Cloud storage

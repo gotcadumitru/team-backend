@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const Message = require('../models/model.message');
 const User = require('../models/model.user');
+const { getUsers } = require('../socket/wbsocket');
 const { getMessageFullType, getUsersFromMessages } = require('../utils/utils.message');
 const checkToken = require('./verifyToken');
 
@@ -104,6 +105,37 @@ router.put('/set-read', checkToken, async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+router.put('/send-message', checkToken, async (req, res) => {
+  const { senderId, receiverId, text, moderatorId } = req.body;
+
+  try {
+
+    const message = new Message({
+      senderId,
+      receiverId,
+      text,
+      moderatorId,
+    });
+
+    await message.save();
+    const ws = req.app.get('socketio');
+    const recivers = getUsers(receiverId);
+    const senderUser = getUsers(senderId);
+    const messageFullType = await getMessageFullType(message);
+    Array.from(new Set([...senderUser, ...recivers].map(({ socketId }) => socketId))).forEach((socketId) => {
+      ws.to(socketId).emit('newMessage', messageFullType);
+    });
+
+    res.status(200).json({
+      message: messageFullType,
+      success: true
+    });
+  } catch (err) {
+    console.log(err)
     res.status(500).json(err);
   }
 });

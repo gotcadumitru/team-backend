@@ -2,16 +2,16 @@ const Message = require('../models/model.message');
 const io = require('socket.io');
 let users = [];
 
-const addUser = (userId, socketId) => {
-  users.push({ userId, socketId });
+const addUser = (idForUser, idForModerator, socketId) => {
+  users = [...users.filter(user => user.socketId !== socketId), { idForUser, idForModerator, socketId }];
 };
 
 const removeUsers = (socketId) => {
   users = users.filter((user) => user.socketId !== socketId);
 };
 
-const getUsers = (userId) => {
-  return users.filter((user) => user.userId === userId);
+const getUsers = (id) => {
+  return users.filter((user) => user.idForUser === id || user.idForModerator === id);
 };
 
 const startWebSocketServer = (server) => {
@@ -22,34 +22,19 @@ const startWebSocketServer = (server) => {
   });
   ws.on('connection', (socket) => {
 
-    socket.on('addUser', (userId) => {
-      addUser(userId, socket.id);
-      ws.emit('getUsers', users);
-    });
-
-    socket.on('sendMessage', async ({ senderId, receiverId, text, moderatorId }) => {
-      const recivers = getUsers(receiverId);
-      const senderUser = getUsers(senderId);
-      [...senderUser, ...recivers].forEach((user) => {
-        ws.to(user.socketId).emit('getMessage');
+    socket.on('addUser',
+      ({ idForUser, idForModerator }) => {
+        addUser(idForUser, idForModerator, socket.id);
+        console.log("add new user: ", idForUser, idForModerator, socket.id)
+        console.log("users:", users)
       });
-
-      const message = new Message({
-        senderId,
-        receiverId,
-        text,
-        moderatorId,
-      });
-      await message.save();
-    });
 
     socket.on('disconnect', () => {
       console.log('a user disconnected!');
       removeUsers(socket.id);
-      ws.emit('getUsers', users);
     });
   });
   return ws
 };
 
-module.exports = startWebSocketServer;
+module.exports = { startWebSocketServer, getUsers, removeUsers, addUser };

@@ -11,7 +11,7 @@ const kanbanboardRouter = require('./routes/route.kanbanboard');
 const fileRouter = require('./routes/route.files');
 const messageRoute = require('./routes/route.message');
 
-const startWebSocketServer = require('./socket/wbsocket');
+const { startWebSocketServer } = require('./socket/wbsocket');
 
 const port = process.env.PORT || 8080;
 
