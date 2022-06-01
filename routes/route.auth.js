@@ -358,7 +358,7 @@ router.post('/resetpassword/:resetToken', async (req, res) => {
     await findUser.save();
     return res.status(200).json({
       succes: true,
-      message: 'PArula a fost resetata cu succes',
+      message: 'Parola a fost resetata cu succes',
     });
   } catch (error) {
     return res.status(400).json({
