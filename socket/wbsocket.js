@@ -1,4 +1,4 @@
-const Message = require('../models/model.message');
+
 const io = require('socket.io');
 let users = [];
 
@@ -13,7 +13,6 @@ const removeUsers = (socketId) => {
 const getUsers = (id) => {
   return users.filter((user) => user.idForUser === id || user.idForModerator === id);
 };
-
 const startWebSocketServer = (server) => {
   const ws = io(server, {
     cors: {
@@ -27,14 +26,43 @@ const startWebSocketServer = (server) => {
         addUser(idForUser, idForModerator, socket.id);
         console.log("add new user: ", idForUser, idForModerator, socket.id)
         console.log("users:", users)
+
+
+        socket.emit("update-user-list", {
+          users: users.filter(
+            existingUser => existingUser.socketId !== socket.id
+          )
+        });
+
+        socket.broadcast.emit("update-user-list", {
+          users: [{ idForUser, idForModerator, socketId: socket.id }]
+        });
+
       });
 
-    socket.on('disconnect', () => {
-      console.log('a user disconnected!');
-      removeUsers(socket.id);
+    socket.on("call-user", ({ to, offer }) => {
+      socket.to(to).emit("call-made", {
+        offer: offer,
+        socketId: socket.id
+      });
     });
+    socket.on("make-answer", ({ to, answer }) => {
+      socket.to(to).emit("answer-made", {
+        socketId: socket.id,
+        answer: answer
+      });
+    });
+
+    socket.on('disconnect', () => {
+      const userForRemove = users.find(existingUser => existingUser.socketId === socket.id)
+      removeUsers(socket.id);
+      socket.broadcast.emit("remove-user", userForRemove);
+      console.log('a user disconnected!');
+    });
+
   });
   return ws
 };
 
 module.exports = { startWebSocketServer, getUsers, removeUsers, addUser };
+
