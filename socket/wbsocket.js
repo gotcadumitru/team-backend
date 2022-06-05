@@ -28,16 +28,7 @@ const startWebSocketServer = (server) => {
         console.log("users:", users)
 
 
-        socket.emit("update-user-list", {
-          users: users.filter(
-            existingUser => existingUser.socketId !== socket.id
-          )
-        });
-
-        socket.broadcast.emit("update-user-list", {
-          users: [{ idForUser, idForModerator, socketId: socket.id }]
-        });
-
+        ws.emit("update-user-list", users);
       });
 
     socket.on("call-user", ({ to, offer }) => {
@@ -46,6 +37,7 @@ const startWebSocketServer = (server) => {
         socketId: socket.id
       });
     });
+
     socket.on("make-answer", ({ to, answer }) => {
       socket.to(to).emit("answer-made", {
         socketId: socket.id,
@@ -56,7 +48,7 @@ const startWebSocketServer = (server) => {
     socket.on('disconnect', () => {
       const userForRemove = users.find(existingUser => existingUser.socketId === socket.id)
       removeUsers(socket.id);
-      socket.broadcast.emit("remove-user", userForRemove);
+      ws.emit("remove-user", userForRemove);
       console.log('a user disconnected!');
     });
 
