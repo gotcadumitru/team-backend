@@ -96,25 +96,26 @@ router.put("/:id", checkToken, async (req, res) => {
       favorites,
     } = req.body;
     const post = await Post.findById(id);
+    if (status !== post.status) {
+      let board = await Kanbanboard.findOne({ boardName: POSTS_KANBANBOARD })
 
-
-    let board = await Kanbanboard.findOne({ boardName: POSTS_KANBANBOARD })
-    board.columns = board.columns.map(column => {
-      if (column.title === status) {
-        return {
-          ...column._doc,
-          items: [...column.items.map(item => item), id]
+      board.columns = board.columns.map(column => {
+        if (column.title === status) {
+          return {
+            ...column._doc,
+            items: [...column.items.map(item => item), id]
+          }
         }
-      }
-      if (column.title === post.status) {
-        return {
-          ...column._doc,
-          items: column.items.filter(item => item !== id)
+        if (column.title === post.status) {
+          return {
+            ...column._doc,
+            items: column.items.filter(item => item !== id)
+          }
         }
-      }
-      return column._doc
-    })
-    await board.save()
+        return column._doc
+      })
+      await board.update()
+    }
 
 
 
