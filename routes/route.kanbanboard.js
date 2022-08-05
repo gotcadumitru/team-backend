@@ -31,7 +31,7 @@ router.get("/board", checkToken, async (req, res) => {
     console.log(error)
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -51,7 +51,7 @@ router.put("/board", checkToken, async (req, res) => {
     console.log(error)
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });

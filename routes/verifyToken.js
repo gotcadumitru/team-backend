@@ -6,7 +6,7 @@ const checkToken = async (req, res, next) => {
     const token = req.header('Authorization').replace('Bearer ', '');
     if (token == null)
       return res.status(400).send({
-        succes: false,
+        success: false,
         message: 'Nu exista token Authorization header',
       });
 
@@ -18,7 +18,7 @@ const checkToken = async (req, res, next) => {
         req.user = findUser;
       } else {
         return res.status(404).send({
-          succes: false,
+          success: false,
           message: 'Nu exista utilizator cu tokenul trimis',
         });
       }
@@ -26,7 +26,7 @@ const checkToken = async (req, res, next) => {
     next();
   } catch (err) {
     return res.status(400).send({
-      succes: false,
+      success: false,
       message: 'Token-ul trimis este invalid',
     });
   }
