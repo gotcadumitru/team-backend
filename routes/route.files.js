@@ -23,14 +23,14 @@ router.post("/upload", upload.any("files"), async (req, res) => {
         })
       )
       res.status(200).json({
-        succes: true,
+        success: true,
         files,
       });
     }
   } catch (err) {
     console.log(err);
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: "Ceva nu a mers bine",
     });
   }
@@ -92,13 +92,13 @@ const getFile = async (file) => {
 //     );
 
 //     res.status(200).json({
-//       succes: true,
+//       success: true,
 //       links: files,
 //     });
 //   } catch (err) {
 //     console.log(err);
 //     return res.status(400).json({
-//       succes: false,
+//       success: false,
 //       message: "Ceva nu a mers bine",
 //     });
 //   }

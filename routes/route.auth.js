@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
   const emailExist = await User.findOne({ email });
   if (emailExist) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Acest email deja exista',
     });
   }
@@ -76,7 +76,7 @@ router.post('/register', async (req, res) => {
     });
   } catch (err) {
     res.status(400).json({
-      succes: false,
+      success: false,
       message: 'err',
     });
   }
@@ -88,35 +88,35 @@ router.post('/login', async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) {
     return res.status(400).send({
-      succes: false,
+      success: false,
       message: 'Invalida adresa de email sau parola',
     });
   }
   const validPass = await bcrypt.compare(password, user.password);
   if (!validPass) {
     return res.status(400).send({
-      succes: false,
+      success: false,
       message: 'Invalida adresa de email sau parola',
     });
   }
 
   if (user.accountStatus === AccountStatus.BLOCKED) {
     return res.status(400).send({
-      succes: false,
+      success: false,
       message: 'Contul tau este blocat',
     });
   }
 
   if (user.accountStatus === AccountStatus.REJECTED) {
     return res.status(400).send({
-      succes: false,
+      success: false,
       message: 'Din pacate confirmarea contului tau a fost anulata de administrator',
     });
   }
   //create and assign a token
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   res.send({
-    succes: true,
+    success: true,
     token: token,
   });
 });
@@ -139,21 +139,21 @@ router.post('/googlelogin', async (req, res) => {
         if (!!user) {
           if (user.accountStatus === AccountStatus.BLOCKED) {
             return res.status(400).send({
-              succes: false,
+              success: false,
               message: 'Contul tau este blocat',
             });
           }
 
           if (user.accountStatus === AccountStatus.REJECTED) {
             return res.status(400).send({
-              succes: false,
+              success: false,
               message: 'Din pacate confirmarea contului tau a fost anulata de administrator',
             });
           }
 
           const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
           res.status(200).json({
-            succes: true,
+            success: true,
             token: token,
           });
         } else {
@@ -175,19 +175,19 @@ router.post('/googlelogin', async (req, res) => {
 
             const token = jwt.sign({ _id: newSavedUser._id }, process.env.TOKEN_SECRET);
             res.status(200).json({
-              succes: true,
+              success: true,
               token: token,
             });
           } catch (err) {
             res.status(400).json({
-              succes: false,
+              success: false,
               message: 'Ceva nu a mers bine 1',
             });
           }
         }
       } catch (err) {
         res.status(400).json({
-          succes: false,
+          success: false,
           message: 'Ceva nu a mers bine 2',
         });
       }
@@ -195,7 +195,7 @@ router.post('/googlelogin', async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine 3',
     });
   }
@@ -220,21 +220,21 @@ router.post('/facebooklogin', async (req, res) => {
           if (!!user) {
             if (user.accountStatus === AccountStatus.BLOCKED) {
               return res.status(400).send({
-                succes: false,
+                success: false,
                 message: 'Contul tau este blocat',
               });
             }
 
             if (user.accountStatus === AccountStatus.REJECTED) {
               return res.status(400).send({
-                succes: false,
+                success: false,
                 message: 'Din pacate confirmarea contului tau a fost anulata de administrator',
               });
             }
 
             const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
             return res.status(200).json({
-              succes: true,
+              success: true,
               token: token,
             });
           } else {
@@ -256,37 +256,37 @@ router.post('/facebooklogin', async (req, res) => {
 
               const token = jwt.sign({ _id: newSavedUser._id }, process.env.TOKEN_SECRET);
               res.status(200).json({
-                succes: true,
+                success: true,
                 token: token,
               });
             } catch (err) {
               res.status(400).json({
-                succes: false,
+                success: false,
                 message: 'Ceva nu a mers bine 1',
               });
             }
           }
         } catch (err) {
           res.status(400).json({
-            succes: false,
+            success: false,
             message: 'Ceva nu a mers bine 2',
           });
         }
       } else {
         res.status(400).json({
-          succes: false,
+          success: false,
           message: 'Ceva nu a mers bine 3',
         });
       }
     } catch (err) {
       res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Ceva nu a mers bine 4',
       });
     }
   } catch (err) {
     res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine 5',
     });
   }
@@ -298,7 +298,7 @@ router.post('/forgotpassword', async (req, res) => {
     const findUser = await User.findOne({ email: email });
     if (!findUser) {
       return res.status(404).json({
-        succes: false,
+        success: false,
         message: 'Nu exista utilizator cu aceasta adresa de email',
       });
     }
@@ -320,7 +320,7 @@ router.post('/forgotpassword', async (req, res) => {
         text: message,
       });
       res.status(200).json({
-        succes: true,
+        success: true,
         message: 'Email-ul a fost trimis',
       });
     } catch (err) {
@@ -328,13 +328,13 @@ router.post('/forgotpassword', async (req, res) => {
       await findUser.save();
 
       res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Email-ul nu a fost trimis',
       });
     }
   } catch (err) {
     res.status(400).json({
-      succes: false,
+      success: false,
       message: 'A aparut o eroare la trimiterea email-ului',
     });
   }
@@ -346,7 +346,7 @@ router.post('/resetpassword/:resetToken', async (req, res) => {
     const findUser = await User.findOne({ resetPasswordToken });
     if (!findUser) {
       return res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Invalid token pentru resetarea parolei',
       });
     }
@@ -357,12 +357,12 @@ router.post('/resetpassword/:resetToken', async (req, res) => {
     findUser.resetPasswordToken = undefined;
     await findUser.save();
     return res.status(200).json({
-      succes: true,
+      success: true,
       message: 'Parola a fost resetata cu succes',
     });
   } catch (error) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Eroare neprevazuta',
     });
   }
@@ -375,7 +375,7 @@ router.post('/changepassword', checkToken, async (req, res) => {
   const validPass = await bcrypt.compare(oldPassword, user.password);
   if (!validPass) {
     return res.status(400).send({
-      succes: false,
+      success: false,
       message: 'Parola invalida',
     });
   }
@@ -388,12 +388,12 @@ router.post('/changepassword', checkToken, async (req, res) => {
     user.save();
 
     return res.status(200).json({
-      succes: true,
+      success: true,
       data: 'Parola a fost modificata cu succes',
     });
   } catch (e) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Eroara la schimbarea parolei',
     });
   }
@@ -406,7 +406,7 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
     const findUser = await User.findOne({ confirmRegisterToken });
     if (!findUser) {
       return res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Invalid token de inregistarare',
       });
     }
@@ -416,13 +416,13 @@ router.post('/confirmRegister/:confirmRegisterToken', async (req, res) => {
     const token = jwt.sign({ _id: findUser._id }, process.env.TOKEN_SECRET);
     await findUser.save();
     return res.status(200).json({
-      succes: true,
+      success: true,
       token: token,
       message: 'Contul a fost confirmat cu succes',
     });
   } catch (error) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Eroare neprevazuta la confirmarea contului',
     });
   }
@@ -432,12 +432,12 @@ router.get('/me', checkToken, async (req, res) => {
   if (req.user) {
     const userFullType = await getUserFullType(req.user);
     res.status(200).json({
-      succes: true,
+      success: true,
       user: userFullType,
     });
   } else {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Accessul nu este permis',
     });
   }
@@ -455,12 +455,12 @@ router.get('/users-to-confirm/:oras/:localitate', checkToken, async (req, res) =
 
     const usersFormated = await Promise.all(users.map(getUserFullType));
     res.status(200).json({
-      succes: true,
+      success: true,
       users: usersFormated,
     });
   } catch (err) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
@@ -476,12 +476,12 @@ router.get('/users-moderatori/:oras/:localitate', checkToken, async (req, res) =
     });
     const usersFormated = await Promise.all(users.map(getUserFullType));
     res.status(200).json({
-      succes: true,
+      success: true,
       users: usersFormated,
     });
   } catch (err) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
@@ -505,29 +505,30 @@ router.get('/users-administrator/:oras/:localitate', checkToken, async (req, res
     });
     const usersFormated = await Promise.all(users.map(getUserFullType));
     res.status(200).json({
-      succes: true,
+      success: true,
       users: usersFormated,
     });
   } catch (err) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
 });
+
 router.get('/users/:oras/:localitate', checkToken, async (req, res) => {
   try {
     const { oras, localitate } = req.params;
     const users = await User.find({ oras, localitate });
     const usersFormated = await Promise.all(users.map(getUserFullType));
     res.status(200).json({
-      succes: true,
+      success: true,
       users: usersFormated,
     });
   } catch (err) {
     console.log(err);
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
@@ -539,13 +540,13 @@ router.post('/change-user-status', checkToken, async (req, res) => {
     const findUser = await User.findById(userId);
     if (!findUser) {
       return res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Invalid id de utilizator',
       });
     }
     if (typeof isConfirmed != 'boolean') {
       return res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Statusul trimis este invalid',
       });
     }
@@ -553,13 +554,13 @@ router.post('/change-user-status', checkToken, async (req, res) => {
     await findUser.save();
     const userWithFullInfo = await getUserFullType(findUser);
     res.status(200).json({
-      succes: true,
+      success: true,
       message: 'Statusul utilizatorului a fost modificat cu succes',
       user: userWithFullInfo,
     });
   } catch (err) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
@@ -571,7 +572,7 @@ router.post('/edit-user', checkToken, async (req, res) => {
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
-        succes: false,
+        success: false,
         message: 'Invalid id de utilizator',
       });
     }
@@ -603,13 +604,13 @@ router.post('/edit-user', checkToken, async (req, res) => {
     await findUser.save();
     const userWithFullInfo = await getUserFullType(findUser);
     res.status(200).json({
-      succes: true,
+      success: true,
       message: 'Utilizatorul a fost modificat cu succes',
       user: userWithFullInfo,
     });
   } catch (err) {
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }

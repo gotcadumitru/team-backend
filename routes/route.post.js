@@ -64,13 +64,13 @@ router.post("/", checkToken, async (req, res) => {
     await board.save()
     return res.status(200).send({
       post: newPost,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -139,13 +139,13 @@ router.put("/:id", checkToken, async (req, res) => {
 
     return res.status(200).send({
       post: post,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -162,13 +162,13 @@ router.put("/like/:id", checkToken, async (req, res) => {
     const postFullData = await getPostFullType(post._doc)
     return res.status(200).send({
       post: postFullData,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -188,13 +188,13 @@ router.put("/dislike/:id", checkToken, async (req, res) => {
     const postFullData = await getPostFullType(post._doc)
     return res.status(200).send({
       post: postFullData,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -209,13 +209,13 @@ router.put("/follow/:id", checkToken, async (req, res) => {
     const postFullData = await getPostFullType(post._doc)
     return res.status(200).send({
       post: postFullData,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -229,13 +229,13 @@ router.put("/unfollow/:id", checkToken, async (req, res) => {
     const postFullData = await getPostFullType(post._doc)
     return res.status(200).send({
       post: postFullData,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -247,13 +247,13 @@ router.get("/", async (req, res) => {
     );
     return res.status(200).send({
       posts,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error)
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -261,12 +261,12 @@ router.get("/categories", async (req, res) => {
   try {
     return res.status(200).send({
       categories: CATEGORIES_TYPES,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -274,12 +274,12 @@ router.get("/importance", async (req, res) => {
   try {
     return res.status(200).send({
       importance: IMPORTANCE_LEVEL,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -287,12 +287,12 @@ router.get("/status", async (req, res) => {
   try {
     return res.status(200).send({
       status: POST_STATUS_ARRAY,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -300,12 +300,12 @@ router.get("/priority", async (req, res) => {
   try {
     return res.status(200).send({
       priority: PRIORITY_LEVEL,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -316,13 +316,13 @@ router.get("/:id", async (req, res) => {
     const postFullData = await getPostFullType(post._doc)
     return res.status(200).send({
       post: postFullData,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error)
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });
@@ -356,13 +356,13 @@ router.post("/comment", checkToken, async (req, res) => {
     const postFulllData = await getPostFullType(postFromBe._doc)
     return res.status(200).send({
       post: postFulllData,
-      succes: true,
+      success: true,
     });
   } catch (error) {
     console.log(error)
     res.status(400).send({
       message: "Ceva nu a mers bine",
-      succes: false,
+      success: false,
     });
   }
 });

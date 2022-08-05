@@ -64,13 +64,13 @@ router.get('/chats/:oras/:localitate', async (req, res) => {
       });
 
     res.status(200).json({
-      succes: true,
+      success: true,
       users: usersFormated,
     });
   } catch (err) {
     console.log(err);
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
@@ -81,13 +81,13 @@ router.get('/new-messages/:reciverId', checkToken, async (req, res) => {
     const messages = await Message.find({ receiverId: reciverId, isMessageRead: false });
 
     res.status(200).json({
-      succes: true,
+      success: true,
       messagesId: messages.map((message) => message._id),
     });
   } catch (err) {
     console.log(err);
     return res.status(400).json({
-      succes: false,
+      success: false,
       message: 'Ceva nu a mers bine',
     });
   }
