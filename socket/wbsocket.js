@@ -18,7 +18,6 @@ const startWebSocketServer = (server) => {
     cors: {
       origin: '*',
     },
-    path: '/socket.io'
   });
   ws.on('connection', (socket) => {
 
