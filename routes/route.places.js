@@ -15,11 +15,11 @@ router.get("/judete", async (req, res) => {
     });
   }
 });
-router.get("/orase/:judetName", async (req, res) => {
+router.get("/orase/:countryName", async (req, res) => {
   try {
-    const { judetName } = req.params;
+    const { countryName } = req.params;
     return res.status(200).send(
-        oraseComuneRomania.filter(oras=>oras.judet.toLowerCase() === judetName.toLowerCase())
+        oraseComuneRomania.filter(oras=>oras.country.toLowerCase() === countryName.toLowerCase())
     );
   } catch (error) {
     console.log(error);
