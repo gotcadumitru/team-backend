@@ -10,6 +10,7 @@ const postRouter = require('./routes/route.post');
 const kanbanboardRouter = require('./routes/route.kanbanboard');
 const fileRouter = require('./routes/route.files');
 const messageRoute = require('./routes/route.message');
+const placesRoute = require('./routes/route.places');
 
 const { startWebSocketServer } = require('./socket/wbsocket');
 
@@ -37,6 +38,7 @@ app.use('/api/post', postRouter);
 app.use('/api/kanbanboard', kanbanboardRouter);
 app.use('/api/files', fileRouter);
 app.use('/api/message', messageRoute);
+app.use('/api/places', placesRoute);
 
 const ws = startWebSocketServer(server);
 app.set('socketio', ws)
