@@ -13854,11 +13854,11 @@ const oraseComuneRomania = [
     ['Ploiestiori', 'Ploieştiori', 'Prahova', true],
 ].map((r, index) => ({
     id: index,
-    nume: r[0],
-    diacritice: r[1],
-    judet: r[2],
-    isJudet: r[3],
+    name: r[0],
+    nameWithDiacritics: r[1],
+    country: r[2],
+    isCountry: r[3],
 }));
 
-const oraseRomania = oraseComuneRomania.filter((localitate) => localitate.isJudet);
+const oraseRomania = oraseComuneRomania.filter((localitate) => localitate.isCountry);
 module.exports = {oraseRomania, oraseComuneRomania}
