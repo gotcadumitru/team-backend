@@ -13856,9 +13856,9 @@ const oraseComuneRomania = [
     id: index,
     name: r[0],
     nameWithDiacritics: r[1],
-    country: r[2],
-    isCountry: r[3],
+    county: r[2],
+    isCounty: r[3],
 }));
 
-const oraseRomania = oraseComuneRomania.filter((localitate) => localitate.isCountry);
+const oraseRomania = oraseComuneRomania.filter((localitate) => localitate.isCounty);
 module.exports = {oraseRomania, oraseComuneRomania}
