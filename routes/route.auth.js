@@ -19,7 +19,13 @@ const client = new OAuth2Client(process.env.GOOGLE_AUDIENCE_ID1);
 router.post('/register', async (req, res) => {
   const { name, surname, email, password, oras, localitate, files, profileImage, birthday, phoneNo } = req.body;
   const emailExist = await User.findOne({ email });
-  if (emailExist || !password) {
+  if(!password){
+    return res.status(400).json({
+      success: false,
+      message: 'tu pare ca nu ai trimis parola, de ce???',
+    });
+  }
+  if (emailExist) {
     return res.status(400).json({
       success: false,
       message: 'Acest email deja exista',
