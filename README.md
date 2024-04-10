@@ -25,18 +25,6 @@ să fie ordonate în funcție de prioritatea calculată pe baza voturilor
 - [@gotcadumitru](https://github.com/gotcadumitru)
 - [@dragoshuniq](https://github.com/dragoshuniq)
 
-## Demo
-
-Link-urile catre prezentarile proiectului
-
-[Video youtube 3 min](https://www.youtube.com/watch?v=cm4zX9sRlzM)
-
-[Video youtube 10 min](https://www.youtube.com/watch?v=s0Nz4tXPAFk)
-
-[Video google drive 3 min](https://drive.google.com/file/d/11lNnwlkRaiId9k_JDBIcdfSkIN5SRBci/view?usp=sharing)
-
-[Video google drive 10 min](https://drive.google.com/file/d/1nhL3DCjZ2mNbZqBSLYbo9RP2GuteXpY-/view?usp=sharing)
-
 ## Functionalitati extra
 
 - Live chat pentru support
