@@ -1,7 +1,7 @@
-const firebasePushNotificationsAdmin = require('firebase-admin')
+const firebaseAdmin = require('firebase-admin')
 
 // Initialize firebase admin SDK
-firebasePushNotificationsAdmin.initializeApp({
-  credential: firebasePushNotificationsAdmin.credential.cert(JSON.parse(process.env.FIREBASE_PUSH_NOTIFICATIONS_SERVICE_ACCOUNT)),
+const firebasePushNotificationsAdmin = firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(JSON.parse(process.env.FIREBASE_PUSH_NOTIFICATIONS_SERVICE_ACCOUNT)),
 },"FIREBASE_PUSH_NOTIFICATIONS_SERVICE_ACCOUNT")
 module.exports = {firebasePushNotificationsAdmin}

@@ -11,8 +11,6 @@ const postRouter = require('./routes/route.post');
 const kanbanboardRouter = require('./routes/route.kanbanboard');
 const messageRoute = require('./routes/route.message');
 const placesRoute = require('./routes/route.places');
-require("./utils/utils.googleDrive");
-require("./utils/utils.firebasePushNotifications");
 
 const { startWebSocketServer } = require('./socket/wbsocket');
 
