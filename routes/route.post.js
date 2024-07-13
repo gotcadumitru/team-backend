@@ -112,6 +112,10 @@ router.post("/", checkToken, async (req, res) => {
           const newPostImage = newPostFullType.files.find(file=>MIME_TYPE_TO_FILE_TYPE[file.mimetype] === FILE_TYPE.IMG)
           await firebasePushNotificationsAdmin.messaging().sendEachForMulticast({
             tokens,
+            data:{
+              "navigationId": "ReportDetails",
+              "reportId": newPost._id
+            },
             notification: {
               title:`New Post: ${title}`,
               body:"A new post has been added, quickly log into the app to see it.",
@@ -152,6 +156,10 @@ router.get("/push-test", async (req, res) => {
       if(tokens.length){
         const response = await firebasePushNotificationsAdmin.messaging().sendEachForMulticast({
           tokens,
+          data:{
+            "navigationId": "ReportDetails",
+            "reportId": "62a97263c048a8211cff714f"
+          },
           notification: {
             title:"New Post",
             body:"A new post has been added, quickly log into the app to see it.",
