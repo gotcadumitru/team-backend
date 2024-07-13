@@ -107,16 +107,16 @@ router.post("/", checkToken, async (req, res) => {
           }
       )
       const tokens = usersTokensResponse.map(token=>token.pushNotificationToken).filter(Boolean)
+      console.debug("tokens",tokens)
       if(tokens.length){
           const newPostFullType = await getPostFullType(newPost._doc)
           const newPostImage = newPostFullType.files.find(file=>MIME_TYPE_TO_FILE_TYPE[file.mimetype] === FILE_TYPE.IMG) || undefined
-
           await firebasePushNotificationsAdmin.messaging().sendEachForMulticast({
             tokens,
             notification: {
               title:"New Post",
               body:"A new post has been added, quickly log into the app to see it.",
-              imageUrl: newPostImage,
+              imageUrl: "https://pbs.twimg.com/profile_images/1701878932176351232/AlNU3WTK_400x400.jpg",
           },
         })
       }
@@ -156,7 +156,7 @@ router.get("/push-test", async (req, res) => {
           notification: {
             title:"New Post",
             body:"A new post has been added, quickly log into the app to see it.",
-            imageUrl: "https://storage.googleapis.com/file-storage-8a30e.appspot.com/513923b1-867b-41e1-9604-e4eacf363293IMG_0002.JPG?GoogleAccessId=firebase-adminsdk-rwoqr%40file-storage-8a30e.iam.gserviceaccount.com&Expires=16447017600&Signature=euxqVgougFiwcD%2F8nKstgmoJnY3d%2FcRzUoD2xzEh5zD5Ytrc%2BjaU4ldXNj%2Btn4ET7mDKHY%2FzY07lnTxrrfTSO4WpXKF8v4BJMlyGyIYTaEx3QjErvT2Oci%2BuSyCFq9%2FLawc5MhyjljwgelIScB594O2vmA5%2Bcg2CNhV3z59MUXmPhOYGrQtG0Vo34vKq%2Bn%2BnGaqgd1oGwKMWwpkkwllUdtKYyr6tnBhN3cxot169GX9fF0I2MsJ6GxfdTbJiSovzwKWXAUWS%2F44pGBAn9CrtLvkXwmjKmE1DVS%2Fc221XkXTp2jAI%2BDf%2BSrFi6INIkx3JQnaicrudhxU4AY1Ojq9VcA%3D%3D",
+            imageUrl: "https://pbs.twimg.com/profile_images/1701878932176351232/AlNU3WTK_400x400.jpg",
           },
         })
         return res.status(200).send({
