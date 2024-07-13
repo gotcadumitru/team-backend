@@ -107,16 +107,15 @@ router.post("/", checkToken, async (req, res) => {
           }
       )
       const tokens = usersTokensResponse.map(token=>token.pushNotificationToken).filter(Boolean)
-      console.debug("tokens",tokens)
       if(tokens.length){
           const newPostFullType = await getPostFullType(newPost._doc)
-          const newPostImage = newPostFullType.files.find(file=>MIME_TYPE_TO_FILE_TYPE[file.mimetype] === FILE_TYPE.IMG) || undefined
+          const newPostImage = newPostFullType.files.find(file=>MIME_TYPE_TO_FILE_TYPE[file.mimetype] === FILE_TYPE.IMG)
           await firebasePushNotificationsAdmin.messaging().sendEachForMulticast({
             tokens,
             notification: {
-              title:"New Post",
+              title:`New Post: ${title}`,
               body:"A new post has been added, quickly log into the app to see it.",
-              imageUrl: "https://pbs.twimg.com/profile_images/1701878932176351232/AlNU3WTK_400x400.jpg",
+              imageUrl: newPostImage?.fileUrl,
           },
         })
       }
