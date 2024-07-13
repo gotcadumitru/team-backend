@@ -9,7 +9,6 @@ const { OAuth2Client } = require('google-auth-library');
 const { default: fetch } = require('node-fetch');
 const AccountStatus = require('../defaults/default.account-status');
 const AccountRole = require('../defaults/default.account-role');
-const File = require('../models/model.file');
 const { getUserFullType } = require('../utils/utils.user');
 const LOGIN_METHOD = require('../defaults/default.login');
 const router = require('express').Router();
@@ -53,6 +52,7 @@ router.post('/register', async (req, res) => {
     profileImage,
     birthday,
     phoneNo,
+    pushNotificationToken:'',
   });
   try {
     const savedUser = await newUser.save();
@@ -574,7 +574,7 @@ router.post('/change-user-status', checkToken, async (req, res) => {
 
 router.post('/edit-user', checkToken, async (req, res) => {
   try {
-    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuFiles, profileImage, birthday, phoneNo } = req.body;
+    const { name, id, surname, email, role, accountStatus, oras, localitate, domiciliuFiles, profileImage, birthday, phoneNo, pushNotificationToken } = req.body;
     const findUser = await User.findById(id);
     if (!findUser) {
       return res.status(400).json({
@@ -603,6 +603,7 @@ router.post('/edit-user', checkToken, async (req, res) => {
     findUser.surname = surname ?? findUser.surname;
     findUser.profileImage = profileImage ?? findUser.profileImage;
     findUser.birthday = birthday ?? findUser.birthday;
+    findUser.pushNotificationToken = pushNotificationToken ?? findUser.pushNotificationToken;
     findUser.phoneNo = phoneNo ?? findUser.phoneNo;
 
     findUser.domiciliuFiles = domiciliuFiles ?? findUser.domiciliuFiles;

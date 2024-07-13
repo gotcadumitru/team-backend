@@ -6,11 +6,13 @@ const path = require('path');
 const app = express();
 const server = require('http').Server(app);
 const authRouter = require('./routes/route.auth');
+const fileRouter = require('./routes/route.files');
 const postRouter = require('./routes/route.post');
 const kanbanboardRouter = require('./routes/route.kanbanboard');
-const fileRouter = require('./routes/route.files');
 const messageRoute = require('./routes/route.message');
 const placesRoute = require('./routes/route.places');
+require("./utils/utils.googleDrive");
+require("./utils/utils.firebasePushNotifications");
 
 const { startWebSocketServer } = require('./socket/wbsocket');
 

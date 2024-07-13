@@ -32,6 +32,10 @@ const userSchema = new Schema({
     type: String,
     default: AccountRole.SIMPLE_USER,
   },
+  pushNotificationToken: {
+    type: String,
+    default: '',
+  },
   birthday: {
     type: Date,
     default: Date.now,

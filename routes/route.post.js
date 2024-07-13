@@ -1,4 +1,5 @@
 const Post = require("../models/model.post");
+const User = require('../models/model.user');
 const checkToken = require("./verifyToken");
 const CATEGORIES_TYPES = require("../defaults/default.categories");
 const IMPORTANCE_LEVEL = require("../defaults/default.importance-level");
@@ -9,6 +10,37 @@ const { getPostFullType } = require("../utils/utils.post");
 const { v4: uuidv4 } = require('uuid');
 const { POST_STATUS, POST_STATUS_ARRAY, POSTS_KANBANBOARD } = require("../defaults/default.post-status");
 const Kanbanboard = require("../models/model.kanbanboard");
+const {firebasePushNotificationsAdmin} = require("../utils/utils.firebasePushNotifications");
+
+const MIME_TYPES = {
+  '.jpeg': 'image/jpeg',
+  '.JPG': 'image/jpeg',
+  '.mp4': 'video/mp4',
+  '.mpeg': 'video/mpeg',
+  '.png': 'image/png',
+  '.pdf': 'application/pdf',
+  '.HEIC': 'application/octet-stream',
+  '.heic': 'application/octet-stream',
+};
+
+const FILE_TYPE = {
+  PDF: 'PDF',
+  IMG: 'IMG',
+  VIDEO: 'VIDEO',
+};
+
+const MIME_TYPE_TO_FILE_TYPE = {
+  [MIME_TYPES['.jpeg']]: FILE_TYPE.IMG,
+  [MIME_TYPES['.JPG']]: FILE_TYPE.IMG,
+  [MIME_TYPES['.mp4']]: FILE_TYPE.VIDEO,
+  [MIME_TYPES['.mpeg']]: FILE_TYPE.VIDEO,
+  [MIME_TYPES['.png']]: FILE_TYPE.IMG,
+  [MIME_TYPES['.HEIC']]: FILE_TYPE.IMG,
+  [MIME_TYPES['.heic']]: FILE_TYPE.IMG,
+  [MIME_TYPES['.pdf']]: FILE_TYPE.PDF,
+};
+
+
 
 router.post("/", checkToken, async (req, res) => {
   try {
@@ -62,6 +94,36 @@ router.post("/", checkToken, async (req, res) => {
       return column._doc
     })
     await board.save()
+
+    try{
+      const usersTokensResponse = await User.find({
+            pushNotificationToken: {
+              $exists: true
+            }
+          },
+          {
+            pushNotificationToken:1,
+            _id: 0
+          }
+      )
+      const tokens = usersTokensResponse.map(token=>token.pushNotificationToken).filter(Boolean)
+      if(tokens.length){
+          const newPostFullType = await getPostFullType(newPost._doc)
+          const newPostImage = newPostFullType.files.find(file=>MIME_TYPE_TO_FILE_TYPE[file.mimetype] === FILE_TYPE.IMG) || undefined
+
+          await firebasePushNotificationsAdmin.messaging().sendEachForMulticast({
+            tokens,
+            notification: {
+              title:"New Post",
+              body:"A new post has been added, quickly log into the app to see it.",
+              imageUrl: newPostImage,
+          },
+        })
+      }
+    }catch(err) {
+      console.error("Push Notification error",err)
+    }
+
     return res.status(200).send({
       post: newPost,
       success: true,
@@ -73,6 +135,47 @@ router.post("/", checkToken, async (req, res) => {
       success: false,
     });
   }
+});
+
+router.get("/push-test", async (req, res) => {
+    try{
+      const usersTokensResponse = await User.find({
+            pushNotificationToken: {
+              $exists: true
+            }
+          },
+          {
+            pushNotificationToken:1,
+            _id: 0
+          }
+      )
+      const tokens = usersTokensResponse.map(token=>token.pushNotificationToken).filter(Boolean)
+      if(tokens.length){
+        const response = await firebasePushNotificationsAdmin.messaging().sendEachForMulticast({
+          tokens,
+          notification: {
+            title:"New Post",
+            body:"A new post has been added, quickly log into the app to see it.",
+            imageUrl: "https://storage.googleapis.com/file-storage-8a30e.appspot.com/513923b1-867b-41e1-9604-e4eacf363293IMG_0002.JPG?GoogleAccessId=firebase-adminsdk-rwoqr%40file-storage-8a30e.iam.gserviceaccount.com&Expires=16447017600&Signature=euxqVgougFiwcD%2F8nKstgmoJnY3d%2FcRzUoD2xzEh5zD5Ytrc%2BjaU4ldXNj%2Btn4ET7mDKHY%2FzY07lnTxrrfTSO4WpXKF8v4BJMlyGyIYTaEx3QjErvT2Oci%2BuSyCFq9%2FLawc5MhyjljwgelIScB594O2vmA5%2Bcg2CNhV3z59MUXmPhOYGrQtG0Vo34vKq%2Bn%2BnGaqgd1oGwKMWwpkkwllUdtKYyr6tnBhN3cxot169GX9fF0I2MsJ6GxfdTbJiSovzwKWXAUWS%2F44pGBAn9CrtLvkXwmjKmE1DVS%2Fc221XkXTp2jAI%2BDf%2BSrFi6INIkx3JQnaicrudhxU4AY1Ojq9VcA%3D%3D",
+          },
+        })
+        return res.status(200).send({
+          tokens,
+          response
+        });
+      }
+
+      return res.status(200).send({
+        tokens: tokens,
+      });
+
+    }catch(err) {
+      console.error("Push Notification error",err)
+      res.status(400).send({
+        message: "Ceva nu a mers bine",
+        success: false,
+      });
+    }
 });
 
 router.put("/:id", checkToken, async (req, res) => {
