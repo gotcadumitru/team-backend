@@ -19,7 +19,6 @@ router.post("/upload", upload.any("files"), async (req, res) => {
         req.files.map(async (file) => {
           const uploadedFile = await getFile(file)
           return uploadedFile;
-
         })
       )
       res.status(200).json({
